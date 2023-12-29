@@ -1,0 +1,5 @@
+*.srt
+all_subtitles/
+python_venv/
+output/
+*.conf
