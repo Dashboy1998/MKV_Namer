@@ -1,0 +1,4 @@
+srt
+tmdbsimple
+opensubtitlescom
+python-ffmpeg
