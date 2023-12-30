@@ -8,6 +8,7 @@ import asyncio
 import tmdbsimple as tmdb
 from opensubtitlescom import OpenSubtitles
 import re
+import subprocess
 
 opensubtitles_api_key=os.environ['OST_API_KEY']
 opensubtitles_username=os.environ['OST_USERNAME']
@@ -191,6 +192,19 @@ def discover_series(dirnames):
     return series_list
 
 
+def find_matches(series_list):
+    for series in series_list:
+        series_path = all_subtitles_dir + "original/OST/" + series.get_subtitles_save_dir()
+        for season in series.seasons:
+            season_path = series_path + season.get_subtitles_save_dir()
+            for episode_number in season.episodes:
+                episode_original_srt_path = season_path + series.name + " E" + str(episode_number).zfill(2) + ".srt"
+                episode_MakeMKV_srt_path = season_path + series.name + " E" + str(episode_number).zfill(2) + ".srt"
+
+
+    #subprocess.run(["bash", "./Find_Best_Match.sh"])
+    print()
+
 dirnames, filenames = generate_mkv_subtitles_folders()
 generate_mkv_subtitles(dirnames, filenames)
 # Create list of series
@@ -199,3 +213,5 @@ series_list = get_information_from_tmdb(tmdb_api_key, series_list)
 
 get_subtitles(opensubtitles_api_key, series_list)
 process_srts()
+
+find_matches()
