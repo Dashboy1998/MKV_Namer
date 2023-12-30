@@ -9,9 +9,6 @@ import tmdbsimple as tmdb
 from opensubtitlescom import OpenSubtitles
 import re
 
-match="*.srt"
-output_ext="txt2"
-
 opensubtitles_api_key=os.environ['OST_API_KEY']
 opensubtitles_username=os.environ['OST_USERNAME']
 opensubtitles_password=os.environ['OST_PASSWORD']
@@ -22,21 +19,29 @@ all_subtitles_dir=os.environ['all_subtitles_dir']
 MakeMKV_subtitles=all_subtitles_dir + 'original/MakeMKV/'
 
 def process_srts():
-    srt_files = glob.glob('**/' + match, recursive=True)
-    print(srt_files)
+    original_subtitles_dir=all_subtitles_dir + "original/"
+    modified_subtitles_dir=all_subtitles_dir + "modified/"
+    for dirpath, dirnames, filenames in os.walk(original_subtitles_dir):
+        # Create directories to store SRTs
+        structure = os.path.join(modified_subtitles_dir, dirpath[len(original_subtitles_dir):])
+        if not os.path.isdir(structure):
+            os.mkdir(structure)
+        structure_input = original_subtitles_dir + dirpath[len(original_subtitles_dir):]
+        for file in filenames:
+            input_file = structure_input + "/" + file
 
-    for file in srt_files:
-        srt_all = ""
-        with open(file) as f:
-            # Find all blocks
-            for line in f:
-                srt_all+=line
-        out_file = file + 'txt2'
-        with open(out_file, "a") as f:
-            subtitle_generator = srt.parse(srt_all)
-            subtitles = list(subtitle_generator)
-            for subtitle in subtitles:
-                f.write(subtitle.content.replace('\n',' ') + '\n')
+            srt_all = ""
+            with open(input_file) as f:
+                # Find all blocks
+                for line in f:
+                    srt_all+=line
+            out_file = structure + "/" + file.replace(".srt", ".txt")
+            original_subtitles_dir
+            with open(out_file, "a") as f:
+                subtitle_generator = srt.parse(srt_all)
+                subtitles = list(subtitle_generator)
+                for subtitle in subtitles:
+                    f.write(subtitle.content.replace('\n',' ') + '\n')
 
 
 class Series:
@@ -215,15 +220,15 @@ dirnames, filenames = generate_mkv_subtitles_folders()
 generate_mkv_subtitles(dirnames, filenames)
 # Create list of series
 series_list = discover_series(dirnames)
-series_list = get_information_from_tmdb(tmdb_api_key, series_list)
+# series_list = get_information_from_tmdb(tmdb_api_key, series_list)
 # Get subtitles for each season
 
 # season_show = get_information_from_tmdb(tmdb_api_key)
 # print(season_show.name + " (" + season_show.year + ") [tmdbid-" + str(season_show.tmdb_id) + "]\n\tSeason " + str(season_show.season_number))
 
 
-get_subtitles(opensubtitles_api_key, series_list)
-# process_srts()
+# get_subtitles(opensubtitles_api_key, series_list)
+process_srts()
 
 
 # dir_name="Hogan_s_Heroes_S3_D2"
