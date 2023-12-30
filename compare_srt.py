@@ -58,8 +58,8 @@ class Series:
     def get_save_dir(self):
         # TODO
         return ""
-    def get_subtitles_save_dir(self):
-        return self.name + " (" + self.year + ") [tmdbid-" + self.tmdb_id + "]/"
+    def get_subtitles_save_dir(self, parent_path = ""):
+        return parent_path + "OST/" + self.name + " (" + self.year + ") [tmdbid-" + self.tmdb_id + "]/"
 
 
 class Season:
@@ -70,8 +70,8 @@ class Season:
     def get_save_dir(self):
         # TODO
         return ""
-    def get_subtitles_save_dir(self):
-        return "Season " + str(self.season_number).zfill(2) + "/"
+    def get_subtitles_save_dir(self, parent_path=""):
+        return parent_path + "Season " + str(self.season_number).zfill(2) + "/"
 
 def get_information_from_tmdb(MY_API_KEY, series_list):
     # Search for title on OST
@@ -115,12 +115,12 @@ def get_subtitles(MY_API_KEY, series_list):
 
     for series in series_list:
         # Creating dirs to save subtitles for series
-        series_path = all_subtitles_dir + "original/OST/" + series.get_subtitles_save_dir()
+        series_path = series.get_subtitles_save_dir(all_subtitles_dir + "original/OST/")
         if not os.path.exists(series_path):
             os.makedirs(series_path)
         for season in series.seasons:
             # Creating dirs to save subtitles for each season
-            season_path = series_path + season.get_subtitles_save_dir()
+            season_path = season.get_subtitles_save_dir(series_path)
             if not os.path.exists(season_path):
                 os.makedirs(season_path)
             # Search for subtitles
@@ -194,9 +194,9 @@ def discover_series(dirnames):
 
 def find_matches(series_list):
     for series in series_list:
-        series_path = all_subtitles_dir + "original/OST/" + series.get_subtitles_save_dir()
+        series_path = series.get_subtitles_save_dir(all_subtitles_dir + "original/")
         for season in series.seasons:
-            season_path = series_path + season.get_subtitles_save_dir()
+            season_path = season.get_subtitles_save_dir(series_path)
             for episode_number in season.episodes:
                 episode_original_srt_path = season_path + series.name + " E" + str(episode_number).zfill(2) + ".srt"
                 episode_MakeMKV_srt_path = season_path + series.name + " E" + str(episode_number).zfill(2) + ".srt"
