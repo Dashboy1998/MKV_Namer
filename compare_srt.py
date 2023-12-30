@@ -13,6 +13,8 @@ match="*.srt"
 output_ext="txt2"
 
 opensubtitles_api_key=os.environ['OST_API_KEY']
+opensubtitles_username=os.environ['OST_USERNAME']
+opensubtitles_password=os.environ['OST_PASSWORD']
 tmdb_api_key=os.environ['TMDB_API_KEY']
 MakeMKV_dir=os.environ['MakeMKV_dir']
 all_subtitles_dir=os.environ['all_subtitles_dir']
@@ -126,6 +128,8 @@ def get_subtitles(MY_API_KEY, series_list):
     # Get subtitles
     # Initialize the OpenSubtitles client
     subtitles = OpenSubtitles("Identify", MY_API_KEY)
+    # Log in (retrieve auth token)
+    subtitles.login(opensubtitles_username, opensubtitles_password)
 
     for series in series_list:
         # TODO Create dir to save subtitles for series
@@ -138,16 +142,13 @@ def get_subtitles(MY_API_KEY, series_list):
             if not os.path.exists(season_path):
                 os.makedirs(season_path)
             # Search for subtitles
-            # for episode_number in season.episodes:
-            #     # TODO Check if sub exists already
-            
-            #     response = subtitles.search(parent_tmdb_id=series.tmdb_id, season_number=season.season_number, episode_number=episode_number, languages="en")
+            for episode_number in season.episodes:
+                # TODO Add padding for episode number
+                save_as = season_path + series.name + " E" + str(episode_number) + ".srt"
+                if not os.path.exists(save_as):
+                    response = subtitles.search(parent_tmdb_id=series.tmdb_id, season_number=season.season_number, episode_number=episode_number, languages="en")
 
-            #     # Convert the response to a Python dictionary
-            #     # response_dict = response.to_dict()l
-            #     # TODO Implement saving paths for series/season
-            #     # save_as="All_Subs/" + series_name + " S" + str(my_show.season_number) + " E" + str(episode_number)
-            #     # srt = subtitles.download_and_save(response.data[0], filename=save_as)
+                    srt = subtitles.download_and_save(response.data[0], filename=save_as)
 
 def generate_mkv_subtitles_folders():
     return_dirnames=[]
@@ -221,7 +222,7 @@ series_list = get_information_from_tmdb(tmdb_api_key, series_list)
 # print(season_show.name + " (" + season_show.year + ") [tmdbid-" + str(season_show.tmdb_id) + "]\n\tSeason " + str(season_show.season_number))
 
 
-# get_subtitles(opensubtitles_api_key, series_list)
+get_subtitles(opensubtitles_api_key, series_list)
 # process_srts()
 
 
