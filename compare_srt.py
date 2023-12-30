@@ -70,7 +70,7 @@ class Season:
         # TODO
         return ""
     def get_subtitles_save_dir(self):
-        return "Season " + str(self.season_number) + "/"
+        return "Season " + str(self.season_number).zfill(2) + "/"
 
 def get_information_from_tmdb(MY_API_KEY, series_list):
     # Search for title on OST
@@ -124,8 +124,7 @@ def get_subtitles(MY_API_KEY, series_list):
                 os.makedirs(season_path)
             # Search for subtitles
             for episode_number in season.episodes:
-                # TODO Add padding for episode number
-                save_as = season_path + series.name + " E" + str(episode_number) + ".srt"
+                save_as = season_path + series.name + " E" + str(episode_number).zfill(2) + ".srt"
                 if not os.path.exists(save_as):
                     response = subtitles.search(parent_tmdb_id=series.tmdb_id, season_number=season.season_number, episode_number=episode_number, languages="en")
 
