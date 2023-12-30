@@ -16,34 +16,63 @@ opensubtitles_password=os.environ['OST_PASSWORD']
 tmdb_api_key=os.environ['TMDB_API_KEY']
 MakeMKV_dir=os.environ['MakeMKV_dir']
 all_subtitles_dir=os.environ['all_subtitles_dir']
+results_file=os.environ['results_file']
 
-MakeMKV_subtitles=all_subtitles_dir + 'original/MakeMKV/'
+original_MakeMKV_subtitles=all_subtitles_dir + 'original/MakeMKV/'
+modified_MakeMKV_subtitles=all_subtitles_dir + 'modified/MakeMKV/'
 
-def process_srts():
-    original_subtitles_dir=all_subtitles_dir + "original/"
-    modified_subtitles_dir=all_subtitles_dir + "modified/"
+
+def process_srt(input_file, output_file_name, output_path):
+    output_file = output_path + output_file_name
+    if not os.path.isdir(output_path):
+        os.makedirs(output_path)
+    if not os.path.exists(output_file):
+        srt_all = ""
+        with open(input_file) as f:
+            # Find all blocks
+            for line in f:
+                srt_all+=line
+        
+        with open(output_file, "a") as f:
+            subtitle_generator = srt.parse(srt_all)
+            subtitles = list(subtitle_generator)
+            for subtitle in subtitles:
+                f.write(subtitle.content.replace('\n',' ') + '\n')
+
+def process_srts(unknown_videos):
+    # Process MakeMKV subtitles
+    for unknown_video in unknown_videos:
+        process_srt( \
+            unknown_video.original_subtitles_path + unknown_video.original_subtitles_name, \
+            unknown_video.modified_subtitles_name, \
+            unknown_video.modified_subtitles_path
+            )
+
+    # Process OST subtities
+    original_subtitles_dir = all_subtitles_dir + "original/OST/"
     for dirpath, dirnames, filenames in os.walk(original_subtitles_dir):
         # Create directories to store SRTs
+        modified_subtitles_dir = all_subtitles_dir + "modified/OST/"
         structure = os.path.join(modified_subtitles_dir, dirpath[len(original_subtitles_dir):])
         if not os.path.isdir(structure):
             os.mkdir(structure)
         structure_input = original_subtitles_dir + dirpath[len(original_subtitles_dir):]
+        
         for file in filenames:
             input_file = structure_input + "/" + file
-            out_file = structure + "/" + file.replace(".srt", ".txt")
+            output_path = structure + "/"
+            output_file_name = file.replace(".srt", ".txt")
+            process_srt(input_file, output_file_name, output_path)
 
-            if not os.path.exists(out_file):
-                srt_all = ""
-                with open(input_file) as f:
-                    # Find all blocks
-                    for line in f:
-                        srt_all+=line
-                
-                with open(out_file, "a") as f:
-                    subtitle_generator = srt.parse(srt_all)
-                    subtitles = list(subtitle_generator)
-                    for subtitle in subtitles:
-                        f.write(subtitle.content.replace('\n',' ') + '\n')
+class Unknown_Video():
+    def __init__(self, path="", file_name="", original_subtitles_name="", modified_subtitles_name="", original_subtitles_path="", modified_subtitles_path=""):
+        self.path=path
+        self.file_name=file_name
+        self.original_subtitles_name=original_subtitles_name
+        self.modified_subtitles_name=modified_subtitles_name
+        self.original_subtitles_path=original_subtitles_path
+        self.modified_subtitles_path=modified_subtitles_path
+
 
 
 class Series:
@@ -148,7 +177,7 @@ def generate_mkv_subtitles_folders():
         return_dirnames = return_dirnames + dirnames
         return_filenames.append(filenames)
         for dirname in dirnames:
-            newpath = MakeMKV_subtitles + dirname
+            newpath = original_MakeMKV_subtitles + dirname
             if not os.path.exists(newpath):
                 os.makedirs(newpath)
     return return_dirnames, return_filenames
@@ -169,15 +198,21 @@ async def run_ffmpeg(srt_name, video_path):
 
 
 def generate_mkv_subtitles(dirnames, filenames):
+    unknown_videos = []
     for i in range(len(filenames)):
         if i > 0:
-            save_path = MakeMKV_subtitles + dirnames[i-1]
+            original_subtitles_save_path = original_MakeMKV_subtitles + dirnames[i-1] + "/"
+            modified_subtitles_save_path = modified_MakeMKV_subtitles + dirnames[i-1] + "/"
             for file in filenames[i]:
-                srt_name = save_path + "/" + file.replace(".mkv",".srt")
+                original_srt_name = original_subtitles_save_path + file.replace(".mkv",".srt")
+                modified_srt_name = modified_subtitles_save_path + file.replace(".mkv",".txt")
                 video_path = MakeMKV_dir + dirnames[i-1] + "/" + file
+                unknown_videos.append(Unknown_Video(video_path, file, file.replace(".mkv",".srt"), file.replace(".mkv",".txt"), original_subtitles_save_path, modified_subtitles_save_path))
 
-                if not os.path.isfile(srt_name):
-                    asyncio.run(run_ffmpeg(srt_name, video_path))
+                if not os.path.isfile(original_srt_name):
+                    asyncio.run(run_ffmpeg(original_srt_name, video_path))
+
+    return unknown_videos
 
 
 
@@ -201,25 +236,21 @@ def discover_series(dirnames):
     return series_list
 
 
-def find_matches(series_list):
-    for series in series_list:
-        series_path = series.get_subtitles_save_dir(all_subtitles_dir + "original/")
-        for season in series.seasons:
-            season_path = season.get_subtitles_save_dir(series_path)
-            for episode in season.episodes:
-                episode_original_srt_path = episode.get_subtitles_save_path(season_path + series.name, ".srt")
+def find_matches(series_list, unknown_videos):
+    with open("tmp_" + results_file, "w") as f:
+        f.write("MKVSRT,ORTSRT,MTOTAL,OTOTAL,DIFF,PERCENTAGE_DIFF\n")
 
-
-    #subprocess.run(["bash", "./Find_Best_Match.sh"])
-    print()
+    for unknown_video in unknown_videos:
+        makemkv_subtitle = unknown_video.modified_subtitles_path + unknown_video.modified_subtitles_name
+        subprocess.run(["bash", "./Find_Best_Match.sh", makemkv_subtitle])
 
 dirnames, filenames = generate_mkv_subtitles_folders()
-generate_mkv_subtitles(dirnames, filenames)
+unknown_videos = generate_mkv_subtitles(dirnames, filenames)
 # Create list of series
 series_list = discover_series(dirnames)
 series_list = get_information_from_tmdb(tmdb_api_key, series_list)
 
 get_subtitles(opensubtitles_api_key, series_list)
-process_srts()
+process_srts(unknown_videos)
 
-find_matches(series_list)
+find_matches(series_list, unknown_videos)
