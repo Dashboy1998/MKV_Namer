@@ -72,16 +72,6 @@ class Season:
     def get_subtitles_save_dir(self):
         return "Season " + str(self.season_number) + "/"
 
-# class Show:
-#     def __init__(self, name="", tmdb_id="", season_number="", episode_array=[], first_air_date=""):
-#         self.name=str(name)
-#         self.tmdb_id=str(tmdb_id)
-#         self.season_number=season_number
-#         self.episode_array=episode_array
-#         # Assumes format is YYYY-MM-DD or YYYY-DD-MM
-#         self.year=str(first_air_date.split("-")[0])
-
-
 def get_information_from_tmdb(MY_API_KEY, series_list):
     # Search for title on OST
     tmdb.API_KEY = tmdb_api_key
@@ -115,20 +105,6 @@ def get_information_from_tmdb(MY_API_KEY, series_list):
                     print("\t" + episode['episode_type'])
     return series_list
 
-# def get_subtitles(MY_API_KEY, my_show):
-#     # Get subtitles
-#     # Initialize the OpenSubtitles client
-#     subtitles = OpenSubtitles("Identify", MY_API_KEY)
-
-#     # Search for subtitles
-#     for episode_number in my_show.episode_array:
-#         response = subtitles.search(parent_tmdb_id=my_show.tmdb_id, season_number=my_show.season_number, episode_number=episode_number, languages="en")
-
-#         # Convert the response to a Python dictionary
-#         # response_dict = response.to_dict()
-#         # save_as="All_Subs/" + series_name + " S" + str(my_show.season_number) + " E" + str(episode_number)
-#         # srt = subtitles.download_and_save(response.data[0], filename=save_as)
-
 def get_subtitles(MY_API_KEY, series_list):
     # Get subtitles
     # Initialize the OpenSubtitles client
@@ -137,12 +113,12 @@ def get_subtitles(MY_API_KEY, series_list):
     subtitles.login(opensubtitles_username, opensubtitles_password)
 
     for series in series_list:
-        # TODO Create dir to save subtitles for series
+        # Creating dirs to save subtitles for series
         series_path = all_subtitles_dir + "original/OST/" + series.get_subtitles_save_dir()
         if not os.path.exists(series_path):
             os.makedirs(series_path)
         for season in series.seasons:
-            # TODO Create dir to save subtitles for each season
+            # Creating dirs to save subtitles for each season
             season_path = series_path + season.get_subtitles_save_dir()
             if not os.path.exists(season_path):
                 os.makedirs(season_path)
@@ -220,22 +196,7 @@ dirnames, filenames = generate_mkv_subtitles_folders()
 generate_mkv_subtitles(dirnames, filenames)
 # Create list of series
 series_list = discover_series(dirnames)
-# series_list = get_information_from_tmdb(tmdb_api_key, series_list)
-# Get subtitles for each season
+series_list = get_information_from_tmdb(tmdb_api_key, series_list)
 
-# season_show = get_information_from_tmdb(tmdb_api_key)
-# print(season_show.name + " (" + season_show.year + ") [tmdbid-" + str(season_show.tmdb_id) + "]\n\tSeason " + str(season_show.season_number))
-
-
-# get_subtitles(opensubtitles_api_key, series_list)
+get_subtitles(opensubtitles_api_key, series_list)
 process_srts()
-
-
-# dir_name="Hogan_s_Heroes_S3_D2"
-# import re
-
-# dir_name=dir_name.replace("_"," ")
-# season_number = re.search('(?<= S)[0-9]*', dir_name).group(0)
-# print(season_number)
-
-
