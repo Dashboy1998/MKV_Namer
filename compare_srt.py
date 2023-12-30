@@ -57,10 +57,10 @@ class Series:
 
 
 class Season:
-    def __init__(self, season_number="", season_tmdb_id="", episodes=[]):
+    def __init__(self, season_number="", season_tmdb_id="", episodes=None):
         self.season_number=season_number
         self.season_tmdb_id=season_tmdb_id
-        self.episodes=episodes
+        self.episodes = episodes if episodes else []
     def get_save_dir(self):
         # TODO
         return ""
