@@ -2,7 +2,6 @@
 
 import srt
 import os
-import glob
 from ffmpeg.asyncio import FFmpeg
 import asyncio
 import tmdbsimple as tmdb
@@ -21,82 +20,8 @@ results_file=os.environ['results_file']
 original_MakeMKV_subtitles=all_subtitles_dir + 'original/MakeMKV/'
 modified_MakeMKV_subtitles=all_subtitles_dir + 'modified/MakeMKV/'
 
-def count_lines(file_path):
-    with open(file_path, 'r') as file:
-        return sum(1 for _ in file)
 
-def get_original_subtitles_path(ost):
-    # TODO
-    path = ""
-    if ost:
-        path = all_subtitles_dir + 'original/OST/'
-    else:
-        path = all_subtitles_dir + 'original/MakeMKV/'
-    return path
-
-def get_modified_subtitles_path(ost):
-    # TODO
-    path = ""
-    if ost:
-        path = all_subtitles_dir + 'modified/OST/'
-    else:
-        path = all_subtitles_dir + 'modified/MakeMKV/'
-    return path
-
-def get_file_name_only():
-    # TODO
-    return ""
-
-def get_path(file_path):
-    file = file_path.split("/")[-1]
-    # TODO Change to remove last X charactors
-    path = file_path.replace(file, "")
-    return path
-
-def process_srt(input_file, output_file):
-    # TODO Move creating output path
-    output_path = get_path(output_file)
-    create_dirs(output_path)
-    if not os.path.exists(output_file):
-        srt_all = ""
-        with open(input_file) as f:
-            # Find all blocks
-            for line in f:
-                srt_all+=line
-        
-        with open(output_file, "a") as f:
-            subtitle_generator = srt.parse(srt_all)
-            subtitles = list(subtitle_generator)
-            for subtitle in subtitles:
-                f.write(subtitle.content.replace('\n',' ') + '\n')
-
-def process_srts(series_list):
-    # original_subtitles_path = get_original_subtitles_path()
-    # modified_subtitles_path = get_modified_subtitles_path()
-    for series in series_list:
-        # series_path = series.get_path()
-        for season in series.seasons:
-            # season_path = season.get_path()
-            for unknown_video in season.unknown_videos:
-                # Process SRTs
-                process_srt( \
-                    unknown_video.original_subtitles_path, \
-                    unknown_video.modified_subtitles_path
-                    )
-            for episode in season.episodes:
-                # Process SRTs
-                process_srt( \
-                    episode.get_original_subtitles_path(), \
-                    episode.get_modified_subtitles_path()
-                    )
-
-class Unknown_Video():
-    def __init__(self, file="", original_subtitles_path="", modified_subtitles_path=""):
-        self.file=file
-        self.original_subtitles_path=original_subtitles_path
-        self.modified_subtitles_path=modified_subtitles_path
-
-
+# Classes
 class Series:
     def __init__(self, name="", tmdb_id="", first_air_date="", seasons=[]):
         self.name=str(name)
@@ -135,7 +60,6 @@ class Season:
         self.episodes = episodes if episodes else []
         self.unknown_videos = unknown_videos if unknown_videos else []
     def get_path(self):
-        # TODO
         return "Season " + str(self.season_number).zfill(2) + "/"
     def get_subtitles_save_dir(self, parent_path=""):
         return parent_path + "Season " + str(self.season_number).zfill(2) + "/"
@@ -152,18 +76,67 @@ class Episode:
         return name + " S" + str(season_number).zfill(2) + "E" + str(self.episode_number).zfill(2) + extension
     def get_subtitles_save_path(self, parent_path, extension=""):
         return parent_path + " E" + str(self.episode_number).zfill(2) + extension
-    
     def get_original_subtitles_path(self):
-        # TODO
         return self.original_subtitles_file
     def get_modified_subtitles_path(self):
-        # TODO
         return self.modified_subtitles_file
     def set_num_lines(self):
         self.num_lines=count_lines(self.modified_subtitles_file)
 
+class Unknown_Video():
+    def __init__(self, file="", original_subtitles_path="", modified_subtitles_path=""):
+        self.file=file
+        self.original_subtitles_path=original_subtitles_path
+        self.modified_subtitles_path=modified_subtitles_path
 
 
+# Micro Functions
+def count_lines(file_path):
+    with open(file_path, 'r') as file:
+        return sum(1 for _ in file)
+
+def get_original_subtitles_path(ost):
+    path = ""
+    if ost:
+        path = all_subtitles_dir + 'original/OST/'
+    else:
+        path = all_subtitles_dir + 'original/MakeMKV/'
+    return path
+
+def get_modified_subtitles_path(ost):
+    path = ""
+    if ost:
+        path = all_subtitles_dir + 'modified/OST/'
+    else:
+        path = all_subtitles_dir + 'modified/MakeMKV/'
+    return path
+
+def get_file_name_only():
+    # TODO
+    return ""
+
+def get_path(file_path):
+    file = file_path.split("/")[-1]
+    # TODO Change to remove last X charactors
+    path = file_path.replace(file, "")
+    return path
+
+def create_dirs(path):
+    if not os.path.isdir(path):
+        os.makedirs(path)
+
+def extract_season_number(unknown_season):
+    # TODO Implement unable to extract season number
+    # TODO Add lower case s
+    return re.search('(?<= S)[0-9]*', unknown_season).group(0)
+
+def extract_series_name(unknown_series):
+    # TODO Implement unable to extract series name
+    # TODO Add lower case s
+    return re.search('.*(?= S[0-9]*)', unknown_series).group(0)
+
+
+# TMDB Functions
 def get_series_information_from_tmdb(series_name):
     # TODO Implement no results found
     tmdb.API_KEY = tmdb_api_key
@@ -188,7 +161,7 @@ def get_season_information_from_tmdb(season_number, series_tmdb_id):
 
     tv = tmdb.TV_Seasons(series_tmdb_id, season_number)
     response = tv.info()
-    
+
     # Season ID
     season_tmdb_id = response['id']
 
@@ -200,6 +173,7 @@ def get_season_information_from_tmdb(season_number, series_tmdb_id):
     return Season(season_number, season_tmdb_id, episodes)
 
 
+# OST Functions
 def get_subtitles(series_list):
     # Get subtitles
     # Initialize the OpenSubtitles client
@@ -227,18 +201,39 @@ def get_subtitles(series_list):
                                                 + episode.get_path(series.name, season.season_number, ".txt")
 
 
-def generate_mkv_subtitles_folders():
-    return_dirnames=[]
-    return_filenames=[]
-    for dirpath, dirnames, filenames in os.walk(MakeMKV_dir):
-        # Create directories to store SRTs
-        return_dirnames = return_dirnames + dirnames
-        return_filenames.append(filenames)
-        for dirname in dirnames:
-            newpath = original_MakeMKV_subtitles + dirname
-            if not os.path.exists(newpath):
-                os.makedirs(newpath)
-    return return_dirnames, return_filenames
+# Processing Functions
+def process_srt(input_file, output_file):
+    # TODO Move creating output path
+    output_path = get_path(output_file)
+    create_dirs(output_path)
+    if not os.path.exists(output_file):
+        srt_all = ""
+        with open(input_file) as f:
+            # Find all blocks
+            for line in f:
+                srt_all+=line
+        
+        with open(output_file, "a") as f:
+            subtitle_generator = srt.parse(srt_all)
+            subtitles = list(subtitle_generator)
+            for subtitle in subtitles:
+                f.write(subtitle.content.replace('\n',' ') + '\n')
+
+def process_srts(series_list):
+    for series in series_list:
+        for season in series.seasons:
+            for unknown_video in season.unknown_videos:
+                # Process SRTs
+                process_srt( \
+                    unknown_video.original_subtitles_path, \
+                    unknown_video.modified_subtitles_path
+                    )
+            for episode in season.episodes:
+                # Process SRTs
+                process_srt( \
+                    episode.get_original_subtitles_path(), \
+                    episode.get_modified_subtitles_path()
+                    )
 
 
 # ffmpeg -i B3_t01.mkv -map 0:s:0 subs_3.srt    
@@ -255,10 +250,6 @@ async def run_ffmpeg(srt_name, video_path):
     await ffmpeg.execute()
 
 
-def create_dirs(path):
-    if not os.path.isdir(path):
-        os.makedirs(path)
-
 def extract_subtitles(series_list):
     # TODO Implement for no seasons but episodes
     for series in series_list:
@@ -274,15 +265,6 @@ def extract_subtitles(series_list):
                     asyncio.run(run_ffmpeg(original_srt_name, unknown_video.file))
     return series_list
 
-def extract_season_number(unknown_season):
-    # TODO Implement unable to extract season number
-    # TODO Add lower case s
-    return re.search('(?<= S)[0-9]*', unknown_season).group(0)
-
-def extract_series_name(unknown_series):
-    # TODO Implement unable to extract series name
-    # TODO Add lower case s
-    return re.search('.*(?= S[0-9]*)', unknown_series).group(0)
 
 def discover_series():
     # TODO Iterate over directories to detect series and seasons
