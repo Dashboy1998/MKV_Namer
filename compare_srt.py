@@ -133,7 +133,7 @@ def get_subtitles(MY_API_KEY, series_list):
 
     for series in series_list:
         # TODO Create dir to save subtitles for series
-        series_path = all_subtitles_dir + "original/ORT/" + series.get_subtitles_save_dir()
+        series_path = all_subtitles_dir + "original/OST/" + series.get_subtitles_save_dir()
         if not os.path.exists(series_path):
             os.makedirs(series_path)
         for season in series.seasons:
