@@ -23,10 +23,10 @@ modified_MakeMKV_subtitles=all_subtitles_dir + 'modified/MakeMKV/'
 
 # Classes
 class Series:
-    def __init__(self, name="", tmdb_id="", first_air_date="", seasons=[]):
+    def __init__(self, name="", tmdb_id="", first_air_date="", seasons=None):
         self.name=str(name)
         self.tmdb_id=str(tmdb_id)
-        self.seasons=seasons
+        self.seasons=seasons if seasons else []
         # Assumes format is YYYY-MM-DD or YYYY-DD-MM
         self.year=str(first_air_date.split("-")[0])
         # TODO Add Unknown videos if season is unknown
