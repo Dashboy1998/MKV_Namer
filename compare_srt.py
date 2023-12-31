@@ -127,13 +127,11 @@ def create_dirs(path):
 
 def extract_season_number(unknown_season):
     # TODO Implement unable to extract season number
-    # TODO Add lower case s
-    return re.search('(?<= S)[0-9]*', unknown_season).group(0)
+    return re.search('(?<= [sS])[0-9]*', unknown_season).group(0)
 
 def extract_series_name(unknown_series):
     # TODO Implement unable to extract series name
-    # TODO Add lower case s
-    return re.search('.*(?= S[0-9]*)', unknown_series).group(0)
+    return re.search('.*(?= [sS][0-9]*)', unknown_series).group(0)
 
 
 # TMDB Functions
