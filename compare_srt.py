@@ -23,6 +23,7 @@ matches_csv=os.environ['matches_csv']
 
 original_MakeMKV_subtitles=all_subtitles_dir + 'original/MakeMKV/'
 modified_MakeMKV_subtitles=all_subtitles_dir + 'modified/MakeMKV/'
+match_threshold = 75
 
 rename=False
 show_matches=False
@@ -412,8 +413,8 @@ def find_matches(series_list):
                     output = subprocess.check_output(["bash", "./compare_srts.sh", unknown_video_subtitles, episode_subtitles])
                     different_lines = int(output.decode('utf-8').strip())
                     percent_match = 100 - 100 * different_lines / num_lines_unknown_video
-                    threshold = 75
-                    if percent_match >= threshold:
+                    match_percentages.append(percent_match)
+                    if percent_match >= match_threshold:
                         mv_name = series.get_path(jellyfin_Shows_directory) + season.get_path() + \
                                       episode.get_path(series.name, season.season_number, ".mkv")
                         percent_match_str="%.2f" % percent_match
@@ -443,6 +444,10 @@ def find_matches(series_list):
                     unknown_video_local_path = unknown_video.file.replace(MakeMKV_dir, "")
                     # TODO Do more than just output answer
                     print("Match not found for " + unknown_video_subtitles)
+                    match_percentages.sort(reverse=True)
+                    print("\tBest match: " + "%.2f" % match_percentages[0])
+                    if len(match_percentages) > 1:
+                        print("\tSecond best match: " + "%.2f" % match_percentages[1])
 
 def main():
     # TODO If no season is detected then set one season to -1 and download all
