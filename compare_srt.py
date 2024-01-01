@@ -18,11 +18,12 @@ all_subtitles_dir=os.environ['all_subtitles_dir']
 results_file=os.environ['results_file']
 jellyfin_Shows_directory=os.environ['jellyfin_directory']
 compare_srt_renaming_history=os.environ['compare_srt_renaming_history']
+matches_csv=os.environ['matches_csv']
 
 original_MakeMKV_subtitles=all_subtitles_dir + 'original/MakeMKV/'
 modified_MakeMKV_subtitles=all_subtitles_dir + 'modified/MakeMKV/'
 
-rename=True
+rename=False
 show_matches=False
 
 # Classes
@@ -387,8 +388,12 @@ def find_matches(series_list):
                             os.rename(unknown_video.file, mv_name)
                             with open(compare_srt_renaming_history, "a") as f:
                                 f.write(unknown_video.file + "," + mv_name + "," + "%.2f" % percent_match + '\n')
+                                                
+                        else:
+                            with open(matches_csv, "a") as f:
+                                f.write(unknown_video.file + "," + mv_name + "," + "%.2f" % percent_match + '\n')
                           
-                        if not rename or show_matches:
+                        if show_matches:
                             episode_likely = episode.get_path(series.name, season.season_number, "")
                             unknown_video_local_path = unknown_video.file.replace(MakeMKV_dir, "")
                             print( unknown_video_local_path + " --> " + episode_likely + " (" + "%.2f" % percent_match + "%)")
