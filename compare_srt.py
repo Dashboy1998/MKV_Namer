@@ -384,7 +384,7 @@ def find_matches(series_list):
                                 os.makedirs(os.path.dirname(mv_name), exist_ok=True)
                             
                             # TODO Fix error with renaming files going too fast?
-                            # os.rename(unknown_video.file, mv_name)
+                            os.rename(unknown_video.file, mv_name)
                             with open(compare_srt_renaming_history, "a") as f:
                                 f.write(unknown_video.file + "," + mv_name + "," + "%.2f" % percent_match + '\n')
                           
