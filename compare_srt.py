@@ -390,7 +390,7 @@ def find_matches(series_list):
                             with open(compare_srt_renaming_history, "a") as f:
                                 f.write(unknown_video.file + "," + mv_name + "," + "%.2f" % percent_match + '\n')
                           
-                        if rename or show_matches:
+                        if not rename or show_matches:
                             episode_likely = episode.get_path(series.name, season.season_number, "")
                             unknown_video_local_path = unknown_video.file.replace(MakeMKV_dir, "")
                             print( unknown_video_local_path + " --> " + episode_likely + " (" + "%.2f" % percent_match + "%)")
