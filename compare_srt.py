@@ -20,6 +20,8 @@ results_file=os.environ['results_file']
 original_MakeMKV_subtitles=all_subtitles_dir + 'original/MakeMKV/'
 modified_MakeMKV_subtitles=all_subtitles_dir + 'modified/MakeMKV/'
 
+rename=False
+show_matches=True
 
 # Classes
 class Series:
@@ -51,6 +53,14 @@ class Series:
                 break
         if adding_season:
             self.new_season.append(new_season)
+    def print_pretty(self, spacing=""):
+        print(self.name)
+        print(spacing + "TMDB ID: " + str(self.tmdb_id))
+        print(spacing + "Year: " + str(self.year))
+        print(spacing + "Series Directory: " + str(self.get_path()))
+        print(spacing + "Seasons: ")
+        for season in self.seasons:
+            season.print_pretty()
 
 
 class Season:
@@ -63,6 +73,12 @@ class Season:
         return "Season " + str(self.season_number).zfill(2) + "/"
     def get_subtitles_save_dir(self, parent_path=""):
         return parent_path + "Season " + str(self.season_number).zfill(2) + "/"
+    def print_pretty(self, spacing="  "):
+        print(spacing + "Season " + self.season_number)
+        for episode in self.episodes:
+            episode.print_pretty(spacing + spacing)
+        for unknown_episode in self.unknown_videos:
+            unknown_episode.print_pretty(spacing)
 
 class Episode:
     # TODO Implement episode types
@@ -82,12 +98,19 @@ class Episode:
         return self.modified_subtitles_file
     def set_num_lines(self):
         self.num_lines=count_lines(self.modified_subtitles_file)
+    def print_pretty(self, spacing):
+        print(spacing + "Episode: " + str(self.episode_number))
+        print(spacing + spacing + "Episode Type: " + str(self.episode_type))
 
 class Unknown_Video():
     def __init__(self, file="", original_subtitles_path="", modified_subtitles_path=""):
         self.file=file
         self.original_subtitles_path=original_subtitles_path
         self.modified_subtitles_path=modified_subtitles_path
+    def print_pretty(self, spacing):
+        print(spacing + "file: " + self.file)
+        print(spacing + spacing + "original_subtitles_path: " + self.original_subtitles_path)
+        print(spacing + spacing + "modified_subtitles_path: " + self.modified_subtitles_path)
 
 
 # Micro Functions
@@ -125,18 +148,35 @@ def create_dirs(path):
     if not os.path.isdir(path):
         os.makedirs(path)
 
-def extract_season_number(unknown_season):
-    # TODO Implement unable to extract season number
-    return re.search('(?<= [sS])[0-9]*', unknown_season).group(0)
-
-def extract_series_name(unknown_series):
+def get_series_name(dirname):
     # TODO Implement unable to extract series name
-    return re.search('.*(?= [sS][0-9]*)', unknown_series).group(0)
+    return re.search('.*(?= \([0-9]*)', dirname).group(0)
+
+def get_series_year(dirname):
+    # TODO Implement unable to extract series year
+    # TODO Implement more than one year extracted
+    results = re.findall(r'(\d+)', dirname)
+    return results[0]
+
+def get_series_tmdbid(dirname):
+    # TODO Implement unable to extract series TMDB ID
+    # TODO Implement more than one TMDB ID extracted
+    results = re.findall(r"\[tmdbid-(\d+)\]", dirname)
+    return results[0]
+
+def get_season_number(dirname):
+    # TODO Implement unable to extract season number
+    # TODO Implement more than one season extracted
+    results = re.findall(r'\d+', dirname)
+    return results[0]
 
 
 # TMDB Functions
 def get_series_information_from_tmdb(series_name):
     # TODO Implement no results found
+    # TODO Implement more than one result found
+    # TODO Implement searching based on TMDB ID
+    # TODO Implement searching based on series name and year
     tmdb.API_KEY = tmdb_api_key
 
     search = tmdb.Search()
@@ -267,55 +307,43 @@ def extract_subtitles(series_list):
 def discover_series():
     # TODO Iterate over directories to detect series and seasons
     series_list = []
+    series_depth = 0
+    season_depth = 1
+    episode_depth = 2
     
-    for dirpath, dirnames, filenames in os.walk(MakeMKV_dir):
-        dirname = dirpath.split("/")[-1]
+    for root, dirs, files in os.walk(MakeMKV_dir):
+        depth = root[len(MakeMKV_dir) + len(os.path.sep):].count(os.path.sep)
+        dirname = os.path.basename(root)
         
-        if dirname:
-            # Extract series name
-            series_name = extract_series_name(dirname)
-            # Get information for series
-            series = get_series_information_from_tmdb(series_name)
-
-            # Get season for series
-            season_number = extract_season_number(dirname)
-            season = get_season_information_from_tmdb(season_number, series.tmdb_id)
-            
-            unknown_videos = []
-            for file in filenames:
-                video_path = os.path.join(dirpath, file)
-                original_subtitles_path = get_original_subtitles_path(ost=False) + series.get_path() + season.get_path() + "/" +dirname + "/" + file.replace(".mkv", ".srt")
-                modified_subtitles_path = get_modified_subtitles_path(ost=False) + series.get_path() + season.get_path() + "/" +dirname + "/" + file.replace(".mkv", ".txt")
-
+        if dirname: # Ignores root folder
+            if depth == series_depth: # Series depth
+                series_name = get_series_name(dirname)
+                series_tmdbid = get_series_tmdbid(dirname)
+                series_year = get_series_year(dirname)
                 
-                unknown_videos.append(Unknown_Video(video_path, original_subtitles_path, modified_subtitles_path))
-            season.unknown_videos=unknown_videos
+                # Read series
+                series = get_series_information_from_tmdb(series_name)
+                series_list.append(series)
+            elif depth >= season_depth:
+                if depth == season_depth:
+                    season_number=get_season_number(dirname)
+                    
+                    # Read Season
+                    season = get_season_information_from_tmdb(season_number, series.tmdb_id)
+                    series.seasons.append(season)
+                if depth == episode_depth:
+                    for file in files:
+                        # Read unknown videoes
+                        for file in files:
+                            video_path = os.path.join(root, file)
+                            original_subtitles_path = get_original_subtitles_path(ost=False) + series_list[-1].get_path() + series_list[-1].seasons[-1].get_path() + "/" + dirname + "/" + file.replace(".mkv", ".srt")
+                            modified_subtitles_path = get_modified_subtitles_path(ost=False) + series_list[-1].get_path() + series_list[-1].seasons[-1].get_path() + "/" + dirname + "/" + file.replace(".mkv", ".txt")
+                            series_list[-1].seasons[-1].unknown_videos.append(Unknown_Video(video_path, original_subtitles_path, modified_subtitles_path))
 
-
-            # Check if series exists
-            series_exists = False
-            for t_series in series_list:
-                # If series exists 
-                    # then check if season exists
-                # If series does not exist add season add series
-                if series.tmdb_id == t_series.tmdb_id:
-                    t_series.add_season(season)
-
-                    # Exit series loop as we have found the series
-                    series_exists = True
-                    break
-            
-            if ( not series_exists ):
-                series.seasons.append(season)
-                series_list.append(series) 
-    
     return series_list
 
 
 def find_matches(series_list):
-    # with open("tmp_" + results_file, "w") as f:
-    #     f.write("MKVSRT,ORTSRT,MTOTAL,OTOTAL,DIFF,PERCENTAGE_DIFF\n")
-
     for series in series_list:
         for season in series.seasons:
             for unknown_video in season.unknown_videos:
@@ -324,22 +352,29 @@ def find_matches(series_list):
                 match_found = False
                 for episode in season.episodes:
                     episode_subtitles = episode.modified_subtitles_file
-                    # # Count the numbers of lines in episode if it does not exist
-                    # if not episode.num_lines:
-                    #     episode.set_num_lines()
                     output = subprocess.check_output(["bash", "./compare_srts.sh", unknown_video_subtitles, episode_subtitles])
                     different_lines = int(output.decode('utf-8').strip())
                     percent_match = 100 - 100 * different_lines / num_lines_unknown_video
                     threshold = 75
                     if percent_match >= threshold:
-                        # TODO Rename file
+                        if rename:
+                            # TODO Rename file
+                            print("Renaming is a work in progress")
+                        if rename or show_matches:
+                            episode_likely = episode.get_path(series.name, season.season_number, "")
+                            unknown_video_local_path = unknown_video.file.replace(MakeMKV_dir, "")
+                            print( unknown_video_local_path + " --> " + episode_likely + " (" + "%.2f" % percent_match + "%)")
+                        
                         if match_found:
                             print("Conflict!")
                         match_found = True
+                if not match_found:
+                    unknown_video_local_path = unknown_video.file.replace(MakeMKV_dir, "")
+                    print("Match not found for " + unknown_video_subtitles)
 
 def main():
     # TODO If no season is detected then set one season to -1 and download all
-    # TODO Assign unknown videos to seasons
+    # TODO Assign unknown videos to seasons -1
 
     # Create list of series
     series_list = discover_series()
