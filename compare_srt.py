@@ -377,9 +377,9 @@ def find_matches(series_list):
                     percent_match = 100 - 100 * different_lines / num_lines_unknown_video
                     threshold = 75
                     if percent_match >= threshold:
-                        if rename:
-                            mv_name = series.get_path(jellyfin_Shows_directory) + season.get_path() + \
+                        mv_name = series.get_path(jellyfin_Shows_directory) + season.get_path() + \
                                       episode.get_path(series.name, season.season_number, ".mkv")
+                        if rename:
                             # Create output folder if it does not exists
                             if not os.path.exists(mv_name):
                                 os.makedirs(os.path.dirname(mv_name), exist_ok=True)
