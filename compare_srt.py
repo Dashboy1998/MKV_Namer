@@ -149,20 +149,18 @@ def create_dirs(path):
         os.makedirs(path)
 
 def get_series_name(dirname):
-    # TODO Implement unable to extract series name
-    return re.search('.*(?= \([0-9]*)', dirname).group(0)
+    results = re.search('.*(?= \([0-9]*)', dirname)
+    return results.group(0) if results else None
 
 def get_series_year(dirname):
-    # TODO Implement unable to extract series year
     # TODO Implement more than one year extracted
     results = re.findall(r'(\d+)', dirname)
-    return results[0]
+    return results[0] if results else None
 
 def get_series_tmdbid(dirname):
-    # TODO Implement unable to extract series TMDB ID
     # TODO Implement more than one TMDB ID extracted
     results = re.findall(r"\[tmdbid-(\d+)\]", dirname)
-    return results[0]
+    return results[0] if results else None
 
 def get_season_number(dirname):
     # TODO Implement unable to extract season number
@@ -172,25 +170,39 @@ def get_season_number(dirname):
 
 
 # TMDB Functions
-def get_series_information_from_tmdb(series_name):
+def get_series_information_from_tmdb(series_name, series_year, series_tmdb_id):
     # TODO Implement no results found
     # TODO Implement more than one result found
-    # TODO Implement searching based on TMDB ID
-    # TODO Implement searching based on series name and year
+    # TODO Implement if given tmdb id and year but not name check if year is correct
     tmdb.API_KEY = tmdb_api_key
 
-    search = tmdb.Search()
-    response = search.tv(query=series_name)
+    series = None
 
-    # TODO Remove leading zeros from ID
-    series_tmdb_id = str(search.results[0]['id'])
-    
-    if series_tmdb_id[0] == 0:
-        print("TMDB ID Beigns with a 0!, not designed to remove the leading zeros yet")
-    series_name = search.results[0]['original_name']
-    series_year = (search.results[0]['first_air_date'])
+    # Gets information if you have the TMDB ID
+    if series_tmdb_id:
+        tv = tmdb.TV(series_tmdb_id)
+        response = tv.info()
 
-    return Series(series_name, series_tmdb_id, series_year)
+        series_name = response['name']
+        series_year = response['first_air_date']
+        series = Series(series_name, series_tmdb_id, series_year)
+    # Does a search for the series with the name and year if provided
+    else:
+        search = tmdb.Search()
+        if series_name and series_year:    
+            response = search.tv(query=series_name, first_air_date_year=series_year)
+        elif series_name:
+            response = search.tv(query=series_name)
+
+        # TODO Remove leading zeros from ID
+        series_tmdb_id = str(search.results[0]['id'])
+        
+        if series_tmdb_id[0] == 0:
+            print("TMDB ID Beigns with a 0!, not designed to remove the leading zeros yet")
+        series_name = search.results[0]['original_name']
+        series_year = (search.results[0]['first_air_date'])
+        series = Series(series_name, series_tmdb_id, series_year)
+    return series
 
 def get_season_information_from_tmdb(season_number, series_tmdb_id):
     # TODO Implement no results found
@@ -321,8 +333,15 @@ def discover_series():
                 series_tmdbid = get_series_tmdbid(dirname)
                 series_year = get_series_year(dirname)
                 
-                # Read series
-                series = get_series_information_from_tmdb(series_name)
+                series = None
+                if series_tmdbid and series_name and series_year:
+                    series = Series(series_name, series_tmdbid, series_year)
+                elif series_tmdbid or series_name:
+                    # Read get missing information
+                    series = get_series_information_from_tmdb(series_name, series_year, series_tmdbid)
+                else:
+                    # TODO Something useful other than just a print
+                    print("You are missing the series TMDB ID and name")
                 series_list.append(series)
             elif depth >= season_depth:
                 if depth == season_depth:
