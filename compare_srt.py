@@ -8,6 +8,7 @@ import tmdbsimple as tmdb
 from opensubtitlescom import OpenSubtitles
 import re
 import subprocess
+import json
 
 opensubtitles_api_key=os.environ['OST_API_KEY']
 opensubtitles_username=os.environ['OST_USERNAME']
@@ -106,10 +107,11 @@ class Episode:
         print(spacing + spacing + "Episode Type: " + str(self.episode_type))
 
 class Unknown_Video():
-    def __init__(self, file="", original_subtitles_path="", modified_subtitles_path=""):
+    def __init__(self, file="", original_subtitles_path="", modified_subtitles_path="", stream_num=-1):
         self.file=file
         self.original_subtitles_path=original_subtitles_path
         self.modified_subtitles_path=modified_subtitles_path
+        self.stream_num=stream_num
     def print_pretty(self, spacing):
         print(spacing + "file: " + self.file)
         #print(spacing + spacing + "original_subtitles_path: " + self.original_subtitles_path)
@@ -289,14 +291,46 @@ def process_srts(series_list):
                     )
 
 
-# ffmpeg -i B3_t01.mkv -map 0:s:0 subs_3.srt    
-async def run_ffmpeg(srt_name, video_path):
+# Get stream information from MKV file
+async def get_media_info(file):
+    ffmpeg = FFmpeg(executable="ffprobe").input(
+            file,
+            print_format="json",
+            show_streams=None,
+        )
+
+    return await ffmpeg.execute()
+
+# See if media has subtitles in correct format and return stream number
+def get_srt_stream_number(file):
+    streams = json.loads( asyncio.run(get_media_info(file)))['streams']
+    indexes = []
+    languages = ["eng"]
+    codecs = ["subrip"]
+    index = -1
+    for stream in streams:
+        if stream['codec_type'] == "subtitle":
+            index = index + 1
+            if stream['codec_name'] in codecs:
+                if stream['tags']['language'] in languages:
+                    indexes.append(index)
+    if len(indexes) > 1:
+        # TODO Better handling of multiple found
+        print("Ripping first found subtitle, Multiple subtitles found for the following for: " + file)
+    elif len(indexes) == 0:
+        # TODO Better handling of not found
+        print("No subtitles found for: " + file)
+    return indexes[0] if indexes else -1
+
+
+
+async def run_ffmpeg(srt_name, video_path, stream_num):
     ffmpeg = (
             FFmpeg()
             .input(video_path)
             .output(
                 srt_name,
-                map=["0:s:0"]
+                map=["0:s:" + str(stream_num)]
                 )
         )
 
@@ -315,7 +349,7 @@ def extract_subtitles(series_list):
                 original_srt_name = unknown_video.original_subtitles_path
                 
                 if not os.path.isfile(original_srt_name):
-                    asyncio.run(run_ffmpeg(original_srt_name, unknown_video.file))
+                    asyncio.run(run_ffmpeg(original_srt_name, unknown_video.file, unknown_video.stream_num))
     return series_list
 
 
@@ -356,9 +390,11 @@ def discover_series():
                 if depth == episode_depth:
                     for file in files:
                         video_path = os.path.join(root, file)
-                        original_subtitles_path = get_original_subtitles_path(ost=False) + series_list[-1].get_path() + series_list[-1].seasons[-1].get_path() + "/" + dirname + "/" + file.replace(".mkv", ".srt")
-                        modified_subtitles_path = get_modified_subtitles_path(ost=False) + series_list[-1].get_path() + series_list[-1].seasons[-1].get_path() + "/" + dirname + "/" + file.replace(".mkv", ".txt")
-                        series_list[-1].seasons[-1].unknown_videos.append(Unknown_Video(video_path, original_subtitles_path, modified_subtitles_path))
+                        stream_num = get_srt_stream_number(video_path)
+                        if stream_num != -1:
+                            original_subtitles_path = get_original_subtitles_path(ost=False) + series_list[-1].get_path() + series_list[-1].seasons[-1].get_path() + "/" + dirname + "/" + file.replace(".mkv", ".srt")
+                            modified_subtitles_path = get_modified_subtitles_path(ost=False) + series_list[-1].get_path() + series_list[-1].seasons[-1].get_path() + "/" + dirname + "/" + file.replace(".mkv", ".txt")
+                            series_list[-1].seasons[-1].unknown_videos.append(Unknown_Video(video_path, original_subtitles_path, modified_subtitles_path, stream_num))
 
     return series_list
 
@@ -370,6 +406,7 @@ def find_matches(series_list):
                 unknown_video_subtitles = unknown_video.modified_subtitles_path
                 num_lines_unknown_video = count_lines(unknown_video_subtitles)
                 match_found = False
+                match_percentages = []
                 for episode in season.episodes:
                     episode_subtitles = episode.modified_subtitles_file
                     output = subprocess.check_output(["bash", "./compare_srts.sh", unknown_video_subtitles, episode_subtitles])
@@ -379,6 +416,7 @@ def find_matches(series_list):
                     if percent_match >= threshold:
                         mv_name = series.get_path(jellyfin_Shows_directory) + season.get_path() + \
                                       episode.get_path(series.name, season.season_number, ".mkv")
+                        percent_match_str="%.2f" % percent_match
                         if rename:
                             # Create output folder if it does not exists
                             if not os.path.exists(mv_name):
@@ -387,16 +425,16 @@ def find_matches(series_list):
                             # TODO Fix error with renaming files going too fast?
                             os.rename(unknown_video.file, mv_name)
                             with open(compare_srt_renaming_history, "a") as f:
-                                f.write(unknown_video.file + "," + mv_name + "," + "%.2f" % percent_match + '\n')
+                                f.write(unknown_video.file + "," + mv_name + "," + percent_match_str + '\n')
                                                 
                         else:
                             with open(matches_csv, "a") as f:
-                                f.write(unknown_video.file + "," + mv_name + "," + "%.2f" % percent_match + '\n')
+                                f.write(unknown_video.file + "," + mv_name + "," + percent_match_str + '\n')
                           
                         if show_matches:
                             episode_likely = episode.get_path(series.name, season.season_number, "")
                             unknown_video_local_path = unknown_video.file.replace(MakeMKV_dir, "")
-                            print( unknown_video_local_path + " --> " + episode_likely + " (" + "%.2f" % percent_match + "%)")
+                            print( unknown_video_local_path + " --> " + episode_likely + " (" + percent_match_str + "%)")
                         
                         if match_found:
                             print("Conflict!")
