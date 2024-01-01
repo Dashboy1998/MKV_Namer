@@ -1,6 +1,6 @@
 #!/bin/bash
 
 source enviroment_vars.conf
-python -m venv "$python_venv"
+source "$python_venv/bin/activate"
 
 python ./MKV_Namer.py
