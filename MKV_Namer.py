@@ -384,7 +384,9 @@ def discover_series():
                 else:
                     # TODO Something useful other than just a print
                     print("You are missing the series TMDB ID and name")
-                series_list.append(series)
+                if series:
+                    # TODO Will attempt to add seasons resulting in an error
+                    series_list.append(series)
             elif depth >= season_depth:
                 if depth == season_depth:
                     season_number=get_season_number(dirname)
