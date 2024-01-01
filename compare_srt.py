@@ -16,6 +16,8 @@ tmdb_api_key=os.environ['TMDB_API_KEY']
 MakeMKV_dir=os.environ['MakeMKV_dir']
 all_subtitles_dir=os.environ['all_subtitles_dir']
 results_file=os.environ['results_file']
+jellyfin_Shows_directory=os.environ['jellyfin_directory']
+compare_srt_renaming_history=os.environ['compare_srt_renaming_history']
 
 original_MakeMKV_subtitles=all_subtitles_dir + 'original/MakeMKV/'
 modified_MakeMKV_subtitles=all_subtitles_dir + 'modified/MakeMKV/'
@@ -377,8 +379,17 @@ def find_matches(series_list):
                     threshold = 75
                     if percent_match >= threshold:
                         if rename:
-                            # TODO Rename file
-                            print("Renaming is a work in progress")
+                            mv_name = series.get_path(jellyfin_Shows_directory) + season.get_path() + \
+                                      episode.get_path(series.name, season.season_number, ".mkv")
+                            # Create output folder if it does not exists
+                            if not os.path.exists(mv_name):
+                                os.makedirs(os.path.dirname(mv_name), exist_ok=True)
+                            
+                            # TODO Fix error with renaming files going too fast?
+                            # os.rename(unknown_video.file, mv_name)
+                            with open(compare_srt_renaming_history, "a") as f:
+                                f.write(unknown_video.file + "," + mv_name + "," + "%.2f" % percent_match + '\n')
+                          
                         if rename or show_matches:
                             episode_likely = episode.get_path(series.name, season.season_number, "")
                             unknown_video_local_path = unknown_video.file.replace(MakeMKV_dir, "")
@@ -389,6 +400,7 @@ def find_matches(series_list):
                         match_found = True
                 if not match_found:
                     unknown_video_local_path = unknown_video.file.replace(MakeMKV_dir, "")
+                    # TODO Do more than just output answer
                     print("Match not found for " + unknown_video_subtitles)
 
 def main():
