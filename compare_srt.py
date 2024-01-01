@@ -22,8 +22,8 @@ compare_srt_renaming_history=os.environ['compare_srt_renaming_history']
 original_MakeMKV_subtitles=all_subtitles_dir + 'original/MakeMKV/'
 modified_MakeMKV_subtitles=all_subtitles_dir + 'modified/MakeMKV/'
 
-rename=False
-show_matches=True
+rename=True
+show_matches=False
 
 # Classes
 class Series:
@@ -77,8 +77,8 @@ class Season:
         return parent_path + "Season " + str(self.season_number).zfill(2) + "/"
     def print_pretty(self, spacing="  "):
         print(spacing + "Season " + self.season_number)
-        for episode in self.episodes:
-            episode.print_pretty(spacing + spacing)
+        # for episode in self.episodes:
+        #     episode.print_pretty(spacing + spacing)
         for unknown_episode in self.unknown_videos:
             unknown_episode.print_pretty(spacing)
 
@@ -111,8 +111,8 @@ class Unknown_Video():
         self.modified_subtitles_path=modified_subtitles_path
     def print_pretty(self, spacing):
         print(spacing + "file: " + self.file)
-        print(spacing + spacing + "original_subtitles_path: " + self.original_subtitles_path)
-        print(spacing + spacing + "modified_subtitles_path: " + self.modified_subtitles_path)
+        #print(spacing + spacing + "original_subtitles_path: " + self.original_subtitles_path)
+        #print(spacing + spacing + "modified_subtitles_path: " + self.modified_subtitles_path)
 
 
 # Micro Functions
@@ -354,12 +354,10 @@ def discover_series():
                     series.seasons.append(season)
                 if depth == episode_depth:
                     for file in files:
-                        # Read unknown videoes
-                        for file in files:
-                            video_path = os.path.join(root, file)
-                            original_subtitles_path = get_original_subtitles_path(ost=False) + series_list[-1].get_path() + series_list[-1].seasons[-1].get_path() + "/" + dirname + "/" + file.replace(".mkv", ".srt")
-                            modified_subtitles_path = get_modified_subtitles_path(ost=False) + series_list[-1].get_path() + series_list[-1].seasons[-1].get_path() + "/" + dirname + "/" + file.replace(".mkv", ".txt")
-                            series_list[-1].seasons[-1].unknown_videos.append(Unknown_Video(video_path, original_subtitles_path, modified_subtitles_path))
+                        video_path = os.path.join(root, file)
+                        original_subtitles_path = get_original_subtitles_path(ost=False) + series_list[-1].get_path() + series_list[-1].seasons[-1].get_path() + "/" + dirname + "/" + file.replace(".mkv", ".srt")
+                        modified_subtitles_path = get_modified_subtitles_path(ost=False) + series_list[-1].get_path() + series_list[-1].seasons[-1].get_path() + "/" + dirname + "/" + file.replace(".mkv", ".txt")
+                        series_list[-1].seasons[-1].unknown_videos.append(Unknown_Video(video_path, original_subtitles_path, modified_subtitles_path))
 
     return series_list
 
