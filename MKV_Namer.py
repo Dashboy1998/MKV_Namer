@@ -366,6 +366,7 @@ def discover_series():
     
     for root, dirs, files in os.walk(MakeMKV_dir):
         depth = root[len(MakeMKV_dir) + len(os.path.sep):].count(os.path.sep)
+        # TODO Breaks if dirs does not end with /
         dirname = os.path.basename(root)
         
         if dirname: # Ignores root folder
