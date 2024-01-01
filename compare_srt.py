@@ -180,6 +180,7 @@ def get_series_information_from_tmdb(series_name, series_year, series_tmdb_id):
     # TODO Implement no results found
     # TODO Implement more than one result found
     # TODO Implement if given tmdb id and year but not name check if year is correct
+    # TODO See if season information is given series call 
     tmdb.API_KEY = tmdb_api_key
 
     series = None
@@ -213,6 +214,8 @@ def get_series_information_from_tmdb(series_name, series_year, series_tmdb_id):
 def get_season_information_from_tmdb(season_number, series_tmdb_id):
     # TODO Implement no results found
     # TODO Implement too many results found
+    # TODO Get all season information in one call
+    # TODO See if series information is given season call 
     tmdb.API_KEY = tmdb_api_key
 
     tv = tmdb.TV_Seasons(series_tmdb_id, season_number)
