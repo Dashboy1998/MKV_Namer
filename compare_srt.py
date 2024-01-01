@@ -42,10 +42,10 @@ class Series:
         self.year=str(first_air_date.split("-")[0])
     def get_path(self, parent_path=""):
         # TODO
-        return  parent_path + self.name + " (" + self.year + ") [tmdbid-" + self.tmdb_id + "]/"
+        return os.path.join(parent_path, self.name + " (" + self.year + ") [tmdbid-" + self.tmdb_id + "]")
     
     def get_subtitles_save_dir(self, parent_path = ""):
-        return parent_path + self.name + " (" + self.year + ") [tmdbid-" + self.tmdb_id + "]/"
+        return os.path.join(parent_path, self.name + " (" + self.year + ") [tmdbid-" + self.tmdb_id + "]")
 
     def add_season(self, new_season):
         adding_season = True
@@ -75,9 +75,9 @@ class Season:
         self.episodes = episodes if episodes else []
         self.unknown_videos = unknown_videos if unknown_videos else []
     def get_path(self):
-        return "Season " + str(self.season_number).zfill(2) + "/"
+        return "Season " + str(self.season_number).zfill(2)
     def get_subtitles_save_dir(self, parent_path=""):
-        return parent_path + "Season " + str(self.season_number).zfill(2) + "/"
+        return os.path.join(parent_path, "Season " + str(self.season_number).zfill(2))
     def print_pretty(self, spacing="  "):
         print(spacing + "Season " + self.season_number)
         # for episode in self.episodes:
@@ -96,7 +96,7 @@ class Episode:
     def get_path(self, name, season_number, extension):
         return name + " S" + str(season_number).zfill(2) + "E" + str(self.episode_number).zfill(2) + extension
     def get_subtitles_save_path(self, parent_path, extension=""):
-        return parent_path + " E" + str(self.episode_number).zfill(2) + extension
+        return os.path.join(parent_path, " E" + str(self.episode_number).zfill(2) + extension)
     def get_original_subtitles_path(self):
         return self.original_subtitles_file
     def get_modified_subtitles_path(self):
@@ -127,17 +127,17 @@ def count_lines(file_path):
 def get_original_subtitles_path(ost):
     path = ""
     if ost:
-        path = all_subtitles_dir + 'original/OST/'
+        path = os.path.join(all_subtitles_dir, 'original/OST/')
     else:
-        path = all_subtitles_dir + 'original/MakeMKV/'
+        path = os.path.join(all_subtitles_dir, 'original/MakeMKV/')
     return path
 
 def get_modified_subtitles_path(ost):
     path = ""
     if ost:
-        path = all_subtitles_dir + 'modified/OST/'
+        path = os.path.join(all_subtitles_dir, 'modified/OST/')
     else:
-        path = all_subtitles_dir + 'modified/MakeMKV/'
+        path = os.path.join(all_subtitles_dir, 'modified/MakeMKV/')
     return path
 
 def get_file_name_only():
@@ -240,21 +240,21 @@ def get_subtitles(series_list):
     for series in series_list:
         for season in series.seasons:
             # Creating dirs to save subtitles for each season
-            season_path = get_original_subtitles_path(ost=True) + series.get_path() + season.get_path()
+            season_path = os.path.join(get_original_subtitles_path(ost=True), series.get_path(), season.get_path())
             if not os.path.exists(season_path):
                 os.makedirs(season_path)
             # Search for subtitles
             for episode in season.episodes:
-                save_as = season_path + episode.get_path(series.name, season.season_number, ".srt")
+                save_as = os.path.join(season_path, episode.get_path(series.name, season.season_number, ".srt"))
                 if not os.path.exists(save_as):
                     # TODO Implement download limit reached
                     # TODO Implement no results found
                     response = subtitles.search(parent_tmdb_id=series.tmdb_id, season_number=season.season_number, episode_number=episode.episode_number, languages="en")
                     srt = subtitles.download_and_save(response.data[0], filename=save_as)
                 episode.original_subtitles_file = save_as
-                episode.modified_subtitles_file = get_modified_subtitles_path(ost=True) \
-                                                + series.get_path() + season.get_path() \
-                                                + episode.get_path(series.name, season.season_number, ".txt")
+                episode.modified_subtitles_file = os.path.join(get_modified_subtitles_path(ost=True), \
+                                                  series.get_path() + season.get_path(), \
+                                                  episode.get_path(series.name, season.season_number, ".txt"))
 
 
 # Processing Functions
@@ -393,8 +393,8 @@ def discover_series():
                         video_path = os.path.join(root, file)
                         stream_num = get_srt_stream_number(video_path)
                         if stream_num != -1:
-                            original_subtitles_path = get_original_subtitles_path(ost=False) + series_list[-1].get_path() + series_list[-1].seasons[-1].get_path() + "/" + dirname + "/" + file.replace(".mkv", ".srt")
-                            modified_subtitles_path = get_modified_subtitles_path(ost=False) + series_list[-1].get_path() + series_list[-1].seasons[-1].get_path() + "/" + dirname + "/" + file.replace(".mkv", ".txt")
+                            original_subtitles_path = os.path.join(get_original_subtitles_path(ost=False), series_list[-1].get_path(), series_list[-1].seasons[-1].get_path(), dirname, file.replace(".mkv", ".srt"))
+                            modified_subtitles_path = os.path.join(get_modified_subtitles_path(ost=False), series_list[-1].get_path(), series_list[-1].seasons[-1].get_path(), dirname, file.replace(".mkv", ".txt"))
                             series_list[-1].seasons[-1].unknown_videos.append(Unknown_Video(video_path, original_subtitles_path, modified_subtitles_path, stream_num))
 
     return series_list
@@ -415,8 +415,8 @@ def find_matches(series_list):
                     percent_match = 100 - 100 * different_lines / num_lines_unknown_video
                     match_percentages.append(percent_match)
                     if percent_match >= match_threshold:
-                        mv_name = series.get_path(jellyfin_Shows_directory) + season.get_path() + \
-                                      episode.get_path(series.name, season.season_number, ".mkv")
+                        mv_name = os.path.join(series.get_path(jellyfin_Shows_directory), season.get_path(), \
+                                      episode.get_path(series.name, season.season_number, ".mkv"))
                         percent_match_str="%.2f" % percent_match
                         if rename:
                             # Create output folder if it does not exists
