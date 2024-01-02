@@ -256,7 +256,8 @@ def get_subtitles(series_list):
                     srt = subtitles.download_and_save(response.data[0], filename=save_as)
                 episode.original_subtitles_file = save_as
                 episode.modified_subtitles_file = os.path.join(get_modified_subtitles_path(ost=True), \
-                                                  series.get_path() + season.get_path(), \
+                                                  series.get_path(),
+                                                  season.get_path(), \
                                                   episode.get_path(series.name, season.season_number, ".txt"))
 
 
@@ -307,7 +308,8 @@ async def get_media_info(file):
 
 # See if media has subtitles in correct format and return stream number
 def get_srt_stream_number(file):
-    streams = json.loads( asyncio.run(get_media_info(file)))['streams']
+    media_info = json.loads( asyncio.run(get_media_info(file)))
+    streams = media_info['streams']
     indexes = []
     languages = ["eng"]
     codecs = ["subrip"]
@@ -334,7 +336,8 @@ async def run_ffmpeg(srt_name, video_path, stream_num):
             .input(video_path)
             .output(
                 srt_name,
-                map=["0:s:" + str(stream_num)]
+                map=["0:s:" + str(stream_num)],
+                codec="text"
                 )
         )
 
