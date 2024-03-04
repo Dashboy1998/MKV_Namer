@@ -181,6 +181,7 @@ def get_series_information_from_tmdb(series_name, series_year, series_tmdb_id):
     # TODO Implement more than one result found
     # TODO Implement if given tmdb id and year but not name check if year is correct
     # TODO See if season information is given series call 
+    # Note the number of seasons and amount of episodes in each season is returned in ['seasons'] however you will not know the number of each episode
     tmdb.API_KEY = tmdb_api_key
 
     series = None
@@ -309,6 +310,8 @@ async def get_media_info(file):
 # See if media has subtitles in correct format and return stream number
 def get_srt_stream_number(file):
     media_info = json.loads( asyncio.run(get_media_info(file)))
+    print(json.dumps(media_info, indent=4))
+    exit()
     streams = media_info['streams']
     indexes = []
     languages = ["eng"]
