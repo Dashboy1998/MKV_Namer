@@ -457,6 +457,7 @@ def find_matches(series_list):
                     print("\tBest match: " + "%.2f" % match_percentages[0])
                     if len(match_percentages) > 1:
                         print("\tSecond best match: " + "%.2f" % match_percentages[1])
+                    print("\tNumber of lines: " + str(num_lines_unknown_video))
 
 def main():
     # TODO If no season is detected then set one season to -1 and download all
