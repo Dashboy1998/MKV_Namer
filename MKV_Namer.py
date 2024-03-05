@@ -9,6 +9,9 @@ from opensubtitlescom import OpenSubtitles
 import re
 import subprocess
 import json
+import shutil
+from pgsrip import pgsrip, Mkv, Options
+from babelfish import Language
 
 opensubtitles_api_key=os.environ['OST_API_KEY']
 opensubtitles_username=os.environ['OST_USERNAME']
@@ -23,6 +26,7 @@ matches_csv=os.environ['matches_csv']
 
 original_MakeMKV_subtitles=all_subtitles_dir + 'original/MakeMKV/'
 modified_MakeMKV_subtitles=all_subtitles_dir + 'modified/MakeMKV/'
+original_MakeMKV_VOBDVD_subtitles=all_subtitles_dir + 'original/MakeMKV_VOBDVD/'
 match_threshold = 75
 
 rename=False
@@ -80,8 +84,8 @@ class Season:
         return os.path.join(parent_path, "Season " + str(self.season_number).zfill(2))
     def print_pretty(self, spacing="  "):
         print(spacing + "Season " + self.season_number)
-        # for episode in self.episodes:
-        #     episode.print_pretty(spacing + spacing)
+        for episode in self.episodes:
+            episode.print_pretty(spacing + spacing)
         for unknown_episode in self.unknown_videos:
             unknown_episode.print_pretty(spacing)
 
@@ -108,15 +112,18 @@ class Episode:
         print(spacing + spacing + "Episode Type: " + str(self.episode_type))
 
 class Unknown_Video():
-    def __init__(self, file="", original_subtitles_path="", modified_subtitles_path="", stream_num=-1):
+    def __init__(self, file="", original_subtitles_path="", modified_subtitles_path="", stream_num=-1, stream_codec=""):
         self.file=file
         self.original_subtitles_path=original_subtitles_path
         self.modified_subtitles_path=modified_subtitles_path
         self.stream_num=stream_num
+        self.stream_codec=stream_codec
     def print_pretty(self, spacing):
         print(spacing + "file: " + self.file)
-        #print(spacing + spacing + "original_subtitles_path: " + self.original_subtitles_path)
-        #print(spacing + spacing + "modified_subtitles_path: " + self.modified_subtitles_path)
+        print(spacing + spacing + "original_subtitles_path: " + self.original_subtitles_path)
+        print(spacing + spacing + "modified_subtitles_path: " + self.modified_subtitles_path)
+        print(spacing + spacing + "stream_num: " + str(self.stream_num))
+        print(spacing + spacing + "stream_codec: " + str(self.stream_codec))
 
 
 # Micro Functions
@@ -254,12 +261,16 @@ def get_subtitles(series_list):
                     # TODO Implement download limit reached
                     # TODO Implement no results found
                     response = subtitles.search(parent_tmdb_id=series.tmdb_id, season_number=season.season_number, episode_number=episode.episode_number, languages="en")
-                    srt = subtitles.download_and_save(response.data[0], filename=save_as)
-                episode.original_subtitles_file = save_as
-                episode.modified_subtitles_file = os.path.join(get_modified_subtitles_path(ost=True), \
-                                                  series.get_path(),
-                                                  season.get_path(), \
-                                                  episode.get_path(series.name, season.season_number, ".txt"))
+                    if response.data:
+                        srt = subtitles.download_and_save(response.data[0], filename=save_as)
+                    else:
+                        print("No subtitles found for " + series.name + " Season " + str(season.season_number) + " Episode " + str(episode.episode_number))
+                if os.path.exists(save_as):
+                    episode.original_subtitles_file = save_as
+                    episode.modified_subtitles_file = os.path.join(get_modified_subtitles_path(ost=True), \
+                                                      series.get_path(),
+                                                      season.get_path(), \
+                                                      episode.get_path(series.name, season.season_number, ".txt"))
 
 
 # Processing Functions
@@ -310,8 +321,7 @@ async def get_media_info(file):
 # See if media has subtitles in correct format and return stream number
 def get_srt_stream_number(file):
     media_info = json.loads( asyncio.run(get_media_info(file)))
-    print(json.dumps(media_info, indent=4))
-    exit()
+    # print(json.dumps(media_info, indent=4))
     streams = media_info['streams']
     indexes = []
     languages = ["eng"]
@@ -322,14 +332,29 @@ def get_srt_stream_number(file):
             index = index + 1
             if stream['codec_name'] in codecs:
                 if stream['tags']['language'] in languages:
-                    indexes.append(index)
+                    indexes.append([index, stream['codec_name']])
+    if len(indexes) == 0:
+        # print("SRT not found, searching for VOBDVD/PGS: " + file)
+        languages = ["eng"]
+        codecs = ["dvd_subtitle", "hdmv_pgs_subtitle"]
+        index = -1
+        for stream in streams:
+            index = index + 1
+            if stream['codec_type'] == "subtitle":
+                if stream['codec_name'] in codecs:
+                    if stream['tags']['language'] in languages:
+                        indexes.append([index, stream['codec_name']])
     if len(indexes) > 1:
         # TODO Better handling of multiple found
         print("Ripping first found subtitle, Multiple subtitles found for the following for: " + file)
     elif len(indexes) == 0:
         # TODO Better handling of not found
         print("No subtitles found for: " + file)
-    return indexes[0] if indexes else -1
+    
+    if indexes:
+        return indexes[0][0], indexes[0][1]  
+    else:
+        return -1, ""
 
 
 
@@ -346,6 +371,23 @@ async def run_ffmpeg(srt_name, video_path, stream_num):
 
     await ffmpeg.execute()
 
+def extract_vobsub(srt_name, video_path, stream_num):
+    # Extract sub and idx
+    subprocess.check_output(["mkvextract", "-q", "tracks", video_path, str(stream_num) + ":" + srt_name])
+
+    # Convert to SRT
+    subprocess.check_output(["vobsub2srt", srt_name.replace(".srt", "") ])
+
+    # Remove SUB and IDX files
+    os.remove(srt_name.replace(".srt", ".idx"))
+    os.remove(srt_name.replace(".srt", ".sub"))
+
+def extract_pgs(srt_name, video_path, stream_num):
+    media=Mkv(video_path)
+    options = Options(languages={Language('eng')}, overwrite=True, one_per_lang=True)
+    pgsrip.rip(media, options)
+    srt_tmp_path=video_path.replace(".mkv", ".en.srt")
+    shutil.move(srt_tmp_path, srt_name)
 
 def extract_subtitles(series_list):
     # TODO Implement for no seasons but episodes
@@ -358,8 +400,26 @@ def extract_subtitles(series_list):
                 create_dirs(path)
                 original_srt_name = unknown_video.original_subtitles_path
                 
+
+                codec_name=unknown_video.stream_codec
+
                 if not os.path.isfile(original_srt_name):
-                    asyncio.run(run_ffmpeg(original_srt_name, unknown_video.file, unknown_video.stream_num))
+                    # Check format name
+                    # if SRT
+                    if codec_name == "subrip":
+                        print("Getting subrip from: " + unknown_video.file)
+                        asyncio.run(run_ffmpeg(original_srt_name, unknown_video.file, unknown_video.stream_num))
+                    # Elif PGS
+                    elif codec_name == "dvd_subtitle":
+                        print("Getting vobdvd from: " + unknown_video.file)
+                        extract_vobsub(original_srt_name, unknown_video.file, unknown_video.stream_num)
+                    # Elif VOBSUB (DVD)
+                    elif codec_name == "hdmv_pgs_subtitle":
+                        print("Getting pgs from: " + unknown_video.file)
+                        extract_pgs(original_srt_name, unknown_video.file, unknown_video.stream_num)
+                    else:
+                        print("Unsupported subtitle format (" + codec_name + ") for: " + unknown_video.file)
+                        exit()
     return series_list
 
 
@@ -403,11 +463,11 @@ def discover_series():
                 if depth == episode_depth:
                     for file in files:
                         video_path = os.path.join(root, file)
-                        stream_num = get_srt_stream_number(video_path)
+                        stream_num, stream_codec = get_srt_stream_number(video_path)
                         if stream_num != -1:
                             original_subtitles_path = os.path.join(get_original_subtitles_path(ost=False), series_list[-1].get_path(), series_list[-1].seasons[-1].get_path(), dirname, file.replace(".mkv", ".srt"))
                             modified_subtitles_path = os.path.join(get_modified_subtitles_path(ost=False), series_list[-1].get_path(), series_list[-1].seasons[-1].get_path(), dirname, file.replace(".mkv", ".txt"))
-                            series_list[-1].seasons[-1].unknown_videos.append(Unknown_Video(video_path, original_subtitles_path, modified_subtitles_path, stream_num))
+                            series_list[-1].seasons[-1].unknown_videos.append(Unknown_Video(video_path, original_subtitles_path, modified_subtitles_path, stream_num, stream_codec))
 
     return series_list
 
@@ -453,14 +513,26 @@ def find_matches(series_list):
                             print("Conflict!")
                         match_found = True
                 if not match_found:
-                    unknown_video_local_path = unknown_video.file.replace(MakeMKV_dir, "")
+                    unknown_video_subtitles_local = unknown_video_subtitles.replace(modified_MakeMKV_subtitles, "")
                     # TODO Do more than just output answer
-                    print("Match not found for " + unknown_video_subtitles)
+                    print("Match not found for " + unknown_video_subtitles_local)
                     match_percentages.sort(reverse=True)
                     print("\tBest match: " + "%.2f" % match_percentages[0])
                     if len(match_percentages) > 1:
                         print("\tSecond best match: " + "%.2f" % match_percentages[1])
                     print("\tNumber of lines: " + str(num_lines_unknown_video))
+
+def remove_episodes_without_subtitles(series_list):
+    episode_list=[]
+    for series in series_list:
+        for season in series.seasons:
+            for episode in season.episodes:
+                if episode.original_subtitles_file:
+                    episode_list.append(episode)
+            season.episodes = episode_list
+
+    return series_list
+
 
 def main():
     # TODO If no season is detected then set one season to -1 and download all
@@ -474,11 +546,16 @@ def main():
     # Download Subtitles from OST
     get_subtitles(series_list)
 
+    # Remove episodes with no subtitles
+    series_list = remove_episodes_without_subtitles(series_list)
+
     # Converts subtites to text files for easier comparison
     process_srts(series_list)
 
     # Find matches
     find_matches(series_list)
+
+    # TODO Implement renaming in a different function
 
 
 if __name__ == "__main__":
