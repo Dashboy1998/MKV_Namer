@@ -1,0 +1,11 @@
+---
+services:
+  mkv_namer:
+    image: mkv_namer
+    build:
+      dockerfile: Dockerfile
+    container_name: mkv_namer
+    # environment:
+      
+    # volumes:
+    #   - "./all_subtitles/:/data/"
