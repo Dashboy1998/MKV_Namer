@@ -51,4 +51,5 @@ RUN pip install --break-system-packages --no-cache-dir --upgrade pip && \
     pip install --break-system-packages --no-cache-dir --requirement requirements.txt && \
     rm requirements.txt
 
+WORKDIR /home/user/scripts
 ENTRYPOINT [ "tail", "-f", "/dev/null" ]
