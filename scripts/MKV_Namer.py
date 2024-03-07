@@ -13,10 +13,10 @@ import shutil
 from pgsrip import pgsrip, Mkv, Options
 from babelfish import Language
 
-opensubtitles_api_key=os.environ['OST_API_KEY']
-opensubtitles_username=os.environ['OST_USERNAME']
-opensubtitles_password=os.environ['OST_PASSWORD']
-tmdb_api_key=os.environ['TMDB_API_KEY']
+opensubtitles_api_key=str(os.environ['OST_API_KEY'])
+opensubtitles_username=str(os.environ['OST_USERNAME'])
+opensubtitles_password=str(os.environ['OST_PASSWORD'])
+tmdb_api_key=str(os.environ['TMDB_API_KEY'])
 MakeMKV_dir="/MakeMKV_dir"
 all_subtitles_dir="/all_subtitles_dir/"
 jellyfin_Shows_directory="/output/jellyfin_Shows"
@@ -26,10 +26,10 @@ matches_csv="/output/matches.csv"
 original_MakeMKV_subtitles=all_subtitles_dir + 'original/MakeMKV/'
 modified_MakeMKV_subtitles=all_subtitles_dir + 'modified/MakeMKV/'
 original_MakeMKV_VOBDVD_subtitles=all_subtitles_dir + 'original/MakeMKV_VOBDVD/'
-match_threshold=os.environ['match_threshold']
+match_threshold=float(os.environ['match_threshold'])
 
-rename=os.environ['rename']
-show_matches=os.environ['show_matches']
+rename=os.environ['rename'].lower() in ('true')
+show_matches=os.environ['show_matches'].lower() in ('true')
 
 # Classes
 class Series:
