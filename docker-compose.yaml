@@ -5,7 +5,10 @@ services:
     build:
       dockerfile: Dockerfile
     container_name: mkv_namer
-    # environment:
-      
-    # volumes:
-    #   - "./all_subtitles/:/data/"
+    env_file:
+      - enviroment_vars.conf
+    volumes:
+      - "all_subtitles/:/all_subtitles_dir/"
+      - "output/:/output/"
+      - "RIPs/:/MakeMKV_dir"
+      - "jellyfin_Shows/:/output/jellyfin_Shows"
