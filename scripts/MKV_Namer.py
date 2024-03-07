@@ -27,10 +27,10 @@ matches_csv="/output/matches.csv"
 original_MakeMKV_subtitles=all_subtitles_dir + 'original/MakeMKV/'
 modified_MakeMKV_subtitles=all_subtitles_dir + 'modified/MakeMKV/'
 original_MakeMKV_VOBDVD_subtitles=all_subtitles_dir + 'original/MakeMKV_VOBDVD/'
-match_threshold = 75
+match_threshold=os.environ['match_threshold']
 
-rename=False
-show_matches=False
+rename=os.environ['rename']
+show_matches=os.environ['show_matches']
 
 # Classes
 class Series:
