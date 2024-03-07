@@ -46,10 +46,10 @@ RUN pacman --noconfirm -R \
 USER user
 WORKDIR /home/user
 COPY --chown=user:user requirements.txt requirements.txt
-COPY --chown=user:user --chmod=755 scripts/ scripts
 RUN pip install --break-system-packages --no-cache-dir --upgrade pip && \
     pip install --break-system-packages --no-cache-dir --requirement requirements.txt && \
     rm requirements.txt
 
+COPY --chown=user:user --chmod=755 scripts/ scripts
 WORKDIR /home/user/scripts
 ENTRYPOINT [ "tail", "-f", "/dev/null" ]
