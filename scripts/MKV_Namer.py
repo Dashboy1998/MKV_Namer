@@ -19,7 +19,6 @@ opensubtitles_password=os.environ['OST_PASSWORD']
 tmdb_api_key=os.environ['TMDB_API_KEY']
 MakeMKV_dir="/MakeMKV_dir"
 all_subtitles_dir="/all_subtitles_dir/"
-results_file="/output/results.csv"
 jellyfin_Shows_directory="/output/jellyfin_Shows"
 compare_srt_renaming_history="/output/MKV_Namer_history.csv"
 matches_csv="/output/matches.csv"
