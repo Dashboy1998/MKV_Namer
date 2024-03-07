@@ -14,10 +14,12 @@ RUN pacman --noconfirm -S \
 
 RUN groupadd user --gid 1000 && \
     useradd user --uid 1000 --gid 1000 -m && \
-    mkdir /all_subtitles/{modified,original}/{MakeMKV,OST} && \
+    mkdir -p /all_subtitles/{modified,original}/{MakeMKV,OST} && \
     chown user:user -R /all_subtitles && \
-    mkdir /series/{modified,original}/{MakeMKV,OST} && \
-    chown user:user -R /all_subtitles
+    mkdir -p /output/jellyfin_Shows && \
+    chown user:user -R /output && \
+    mkdir /MakeMKV_dir && \
+    chown user:user -R /MakeMKV_dir
 
 # Prepare build for vobsub2srt
 USER user
