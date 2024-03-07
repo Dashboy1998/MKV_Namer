@@ -1,5 +1,5 @@
-OST_API_KEY=""
 TMDB_API_KEY=""
+OST_API_KEY=""
 OST_USERNAME=""
 OST_PASSWORD=""
 match_threshold=75
