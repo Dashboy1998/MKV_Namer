@@ -55,3 +55,9 @@ Output Directory used for matches.csv
 
 ## /output/jellyfin_Shows
 Directory which MKVs are moved to when a match is found and if rename is enabled.
+
+# Running program
+With the container started run `docker exec mkv_namer python MKV_Namer.py`
+
+## Undoing rename
+With the container started run `docker exec mkv_namer bash undo_move.sh`
