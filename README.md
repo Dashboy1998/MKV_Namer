@@ -1,6 +1,6 @@
 # Required Directory Structure
 ```
-Shows
+MakeMKV_dir
 ├── Series (2010) (tmdbid-123456)
 │   ├── Season 01
 │   │   ├── DISC_LABEL
@@ -44,17 +44,22 @@ then using sdiff it will compare your video's subtitles to the downloaded subtit
 | show_matches | Enables showing matches | False | True/False |
 
 # Volume Mounts
-## /MakeMKV_dir
-Input directory with MKV files must have the [Required Directory Structure](#required_directory_structure)
+## /data/
+> [!TIP]
+> For better performance do not use separate volumes in docker for [MakeMKV_dir](#/data/MakeMKV_dir) &
+> [jellyfin_Shows](#/data/jellyfin_Shows) as this will result in a copy then delete instead of a rename.
 
-## /all_subtitles_dir/
-Directory to store subtitles and text files. Files are not deleted.
-
-## /output/
+Please mount your directory containing [MakeMKV_dir](#/data/MakeMKV_dir) & [jellyfin_Shows](#/data/jellyfin_Shows)
 Output Directory used for matches.csv
 
-## /output/jellyfin_Shows
-Directory which MKVs are moved to when a match is found and if rename is enabled.
+## /data/MakeMKV_dir
+Input directory with MKV files must have the [Required Directory Structure](#required_directory_structure)
+
+## /data/jellyfin_Shows
+Output directory which MKVs are moved to when a match is found and if rename is enabled.
+
+## /data/all_subtitles_dir/
+Output directory to store subtitles and text files. Files are not deleted.
 
 # Running program
 With the container started run `docker exec mkv_namer python MKV_Namer.py`

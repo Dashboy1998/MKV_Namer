@@ -17,11 +17,11 @@ opensubtitles_api_key=str(os.environ['OST_API_KEY'])
 opensubtitles_username=str(os.environ['OST_USERNAME'])
 opensubtitles_password=str(os.environ['OST_PASSWORD'])
 tmdb_api_key=str(os.environ['TMDB_API_KEY'])
-MakeMKV_dir="/MakeMKV_dir"
-all_subtitles_dir="/all_subtitles_dir/"
-jellyfin_Shows_directory="/output/jellyfin_Shows"
-compare_srt_renaming_history="/output/MKV_Namer_history.csv"
-matches_csv="/output/matches.csv"
+MakeMKV_dir="/data/MakeMKV_dir"
+all_subtitles_dir="/data/all_subtitles_dir/"
+jellyfin_Shows_directory="/data/jellyfin_Shows"
+compare_srt_renaming_history="/data/MKV_Namer_history.csv"
+matches_csv="/data/matches.csv"
 
 original_MakeMKV_subtitles=all_subtitles_dir + 'original/MakeMKV/'
 modified_MakeMKV_subtitles=all_subtitles_dir + 'modified/MakeMKV/'
