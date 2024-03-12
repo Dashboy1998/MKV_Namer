@@ -271,6 +271,10 @@ def get_subtitles(series_list):
                                                       season.get_path(), \
                                                       episode.get_path(series.name, season.season_number, ".txt"))
 
+def remove_empty_lines(input_string):
+    lines = input_string.splitlines()
+    non_empty_lines = [line for line in lines if line.strip()]
+    return os.linesep.join(non_empty_lines)
 
 # Processing Functions
 def process_srt(input_file, output_file):
@@ -288,7 +292,10 @@ def process_srt(input_file, output_file):
             subtitle_generator = srt.parse(srt_all)
             subtitles = list(subtitle_generator)
             for subtitle in subtitles:
-                f.write(subtitle.content.replace('\n',' ') + '\n')
+                alphanumeric=re.sub('[^0-9a-zA-Z ]+', '', subtitle.content)
+                word_per_line=alphanumeric.replace(" ", "\n")
+                no_blank_lines=remove_empty_lines(word_per_line)
+                f.write(no_blank_lines + '\n')
 
 def process_srts(series_list):
     for series in series_list:
