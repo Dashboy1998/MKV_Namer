@@ -111,12 +111,13 @@ class Episode:
         print(spacing + spacing + "Episode Type: " + str(self.episode_type))
 
 class Unknown_Video():
-    def __init__(self, file="", original_subtitles_path="", modified_subtitles_path="", stream_num=-1, stream_codec=""):
+    def __init__(self, file="", original_subtitles_path="", modified_subtitles_path="", stream_num=-1, stream_codec="", match_dict=None):
         self.file=file
         self.original_subtitles_path=original_subtitles_path
         self.modified_subtitles_path=modified_subtitles_path
         self.stream_num=stream_num
         self.stream_codec=stream_codec
+        self.match_dict= match_dict if match_dict else {}
     def print_pretty(self, spacing):
         print(spacing + "file: " + self.file)
         print(spacing + spacing + "original_subtitles_path: " + self.original_subtitles_path)
@@ -495,28 +496,19 @@ def find_matches(series_list):
                     if percent_match >= match_threshold:
                         mv_name = os.path.join(series.get_path(jellyfin_Shows_directory), season.get_path(), \
                                       episode.get_path(series.name, season.season_number, ".mkv"))
+
+                        # Add match to dict
+                        unknown_video.match_dict[mv_name]=percent_match
+
                         percent_match_str="%.2f" % percent_match
-                        if rename:
-                            # Create output folder if it does not exists
-                            if not os.path.exists(mv_name):
-                                os.makedirs(os.path.dirname(mv_name), exist_ok=True)
-                            
-                            # TODO Fix error with renaming files going too fast?
-                            shutil.move(unknown_video.file, mv_name)
-                            with open(compare_srt_renaming_history, "a") as f:
-                                f.write(unknown_video.file + "," + mv_name + "," + percent_match_str + '\n')
-                                                
-                        else:
-                            with open(matches_csv, "a") as f:
-                                f.write(unknown_video.file + "," + mv_name + "," + percent_match_str + '\n')
+                        with open(matches_csv, "a") as f:
+                            f.write(unknown_video.file + "," + mv_name + "," + percent_match_str + '\n')
                           
                         if show_matches:
                             episode_likely = episode.get_path(series.name, season.season_number, "")
                             unknown_video_local_path = unknown_video.file.replace(MakeMKV_dir, "")
                             print( unknown_video_local_path + " --> " + episode_likely + " (" + percent_match_str + "%)")
                         
-                        if match_found:
-                            print("Conflict!")
                         match_found = True
                 if not match_found:
                     unknown_video_subtitles_local = unknown_video_subtitles.replace(modified_MakeMKV_subtitles, "")
@@ -527,6 +519,8 @@ def find_matches(series_list):
                     if len(match_percentages) > 1:
                         print("\tSecond best match: " + "%.2f" % match_percentages[1])
                     print("\tNumber of lines: " + str(num_lines_unknown_video))
+    
+    return series_list
 
 def remove_episodes_without_subtitles(series_list):
     episode_list=[]
@@ -538,6 +532,31 @@ def remove_episodes_without_subtitles(series_list):
             season.episodes = episode_list
 
     return series_list
+
+def rename_videos(series_list):
+    for series in series_list:
+        for season in series.seasons:
+            for unknown_video in season.unknown_videos:
+                if len(unknown_video.match_dict) > 1:
+                    unknown_video_local_path = unknown_video.file.replace(MakeMKV_dir, "")
+                    print("Multiple matches for " + unknown_video_local_path)
+                    for mv_name, percent_match in unknown_video.match_dict.items():
+                        percent_match_str="%.2f" % percent_match
+                        filename=os.path.basename(mv_name)
+                        print("\t" + percent_match_str + "," + filename)
+                elif len(unknown_video.match_dict) == 1:
+                    mv_name=next(iter(unknown_video.match_dict.keys()))
+                    percent_match=next(iter(unknown_video.match_dict.values()))
+
+                    percent_match_str="%.2f" % percent_match
+                    # Create output folder if it does not exists
+                    if not os.path.exists(mv_name):
+                        os.makedirs(os.path.dirname(mv_name), exist_ok=True)
+                    
+                    # TODO Fix error with renaming files going too fast?
+                    shutil.move(unknown_video.file, mv_name)
+                    with open(compare_srt_renaming_history, "a") as f:
+                        f.write(unknown_video.file + "," + mv_name + "," + percent_match_str + '\n')
 
 
 def main():
@@ -559,9 +578,10 @@ def main():
     process_srts(series_list)
 
     # Find matches
-    find_matches(series_list)
+    series_list = find_matches(series_list)
 
-    # TODO Implement renaming in a different function
+    if rename:
+        rename_videos(series_list)
 
 
 if __name__ == "__main__":
