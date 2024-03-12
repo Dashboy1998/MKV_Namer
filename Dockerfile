@@ -40,6 +40,10 @@ RUN pacman --noconfirm -R \
     cmake && \
     rm -rf vobsub2srt-git
 
+ENV match_threshold=75 \
+    rename=False \
+    show_matches=False
+
 # Install pip packages
 USER user
 WORKDIR /home/user
