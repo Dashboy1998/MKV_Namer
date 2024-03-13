@@ -25,11 +25,15 @@ MakeMKV_dir
 This program will use FFMPEG (FFPROBE) on every MKV to find the first SRT in english. If an SRT is not found then it will search for the first english VOBDVD/PGS.
 
 SRTs will be extracted using [FFMPEG](https://github.com/FFmpeg/FFmpeg).
+
 VOBDVD will be extracted using mkvextract and then converted to SRT using [vobsub2srt](https://github.com/ruediger/VobSub2SRT/tree/master).
+
 PGS will be extracted and converted to SRT using [pgsrip](https://github.com/ratoaq2/pgsrip).
 
 then using [tmdbsimple](https://github.com/celiao/tmdbsimple) it will get the list of episodes for every season listed in your directory structure.
+
 then using [opensubtitlescom](https://github.com/dusking/opensubtitles-com) it will download subtitles for all episodes in a given season
+
 then using sdiff it will compare your video's subtitles to the downloaded subtitles to find a match and name your videos.
 
 # Enviromental Variables
