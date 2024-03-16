@@ -42,9 +42,11 @@ class Series:
         # Assumes format is YYYY-MM-DD or YYYY-DD-MM
         self.year = str(first_air_date.split('-')[0])
         # TODO Add Unknown videos if season is unknown
+
     def set_year(self, first_air_date=''):
         # Assumes format is YYYY-MM-DD or YYYY-DD-MM
         self.year = str(first_air_date.split('-')[0])
+
     def get_path(self, parent_path = ''):
         # TODO
         return os.path.join(parent_path, 'self.name ({0}) [tmdbid-{1}].format(self.year, self.tmdb_id)')
@@ -63,6 +65,7 @@ class Series:
                 break
         if adding_season:
             self.new_season.append(new_season)
+
     def print_pretty(self, spacing=''):
         sys.stdout.write('{0}\n'.format(self.name))
         sys.stdout.write('{0}TMDB ID: {1}\n'.format(spacing, self.tmdb_id))
@@ -79,10 +82,13 @@ class Season:
         self.season_tmdb_id = season_tmdb_id
         self.episodes = episodes if episodes else []
         self.unknown_videos = unknown_videos if unknown_videos else []
+
     def get_path(self):
         return 'Season {0}'.format(str(self.season_number).zfill(2))
+
     def get_subtitles_save_dir(self, parent_path=''):
         return os.path.join(parent_path, 'Season {0}'.format(str(self.season_number).zfill(2)))
+
     def print_pretty(self, spacing='  '):
         sys.stdout.write('{0}Season {1}\n'.format(spacing, self.season_number))
         for episode in self.episodes:
@@ -98,16 +104,22 @@ class Episode:
         self.original_subtitles_file = original_subtitles_file
         self.modified_subtitles_file = modified_subtitles_file
         self.num_lines = num_lines
+
     def get_path(self, name, season_number, extension):
         return '{0} S{1}E{2}{3}'.format(name, str(season_number).zfill(2), str(self.episode_number).zfill(2), extension)
+
     def get_subtitles_save_path(self, parent_path, extension=''):
         return os.path.join(parent_path, ' E{0}'.format(str(self.episode_number).zfill(2), extension))
+
     def get_original_subtitles_path(self):
         return self.original_subtitles_file
+
     def get_modified_subtitles_path(self):
         return self.modified_subtitles_file
+
     def set_num_lines(self):
         self.num_lines = count_lines(self.modified_subtitles_file)
+
     def print_pretty(self, spacing):
         sys.stdout.write('{0}Episode: {1}\n'.format(spacing , self.episode_number))
         sys.stdout.write('{0}{0}Episode Type: {1}\n'.format(spacing, self.episode_type))
@@ -120,6 +132,7 @@ class Unknown_Video():
         self.stream_num = stream_num
         self.stream_codec = stream_codec
         self.match_dict =  match_dict if match_dict else {}
+
     def print_pretty(self, spacing):
         sys.stdout.write('{0}file: \n'.format(spacing, self.file))
         sys.stdout.write('{0}{0}original_subtitles_path: \n'.format(spacing, self.original_subtitles_path))
