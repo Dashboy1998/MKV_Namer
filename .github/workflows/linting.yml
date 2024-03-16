@@ -42,3 +42,14 @@ jobs:
         with:
           config: ".markdownlint.jsonc"
           globs: "**/*.md"
+
+  yamllint:
+    name: Lint - Yamllint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Lint - Yamllint
+        uses: ibiqlik/action-yamllint@v3
+        with:
+          config_file: .yamllint.yaml
