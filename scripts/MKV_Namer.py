@@ -1,12 +1,13 @@
 #!/bin/python
 
-import srt
 import os
-import asyncio
 import re
 import shutil
 import subprocess
+
+import srt
 import json
+import asyncio
 import tmdbsimple as tmdb
 from ffmpeg.asyncio import FFmpeg
 from opensubtitlescom import OpenSubtitles
