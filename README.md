@@ -1,4 +1,5 @@
 # Required Directory Structure
+
 ```
 MakeMKV_dir
 ├── Series (2010) (tmdbid-123456)
@@ -22,6 +23,7 @@ MakeMKV_dir
 ```
 
 # How does it work
+
 This program will use FFMPEG (FFPROBE) on every MKV to find the first SRT in english. If an SRT is not found then it will search for the first english VOBDVD/PGS.
 
 SRTs will be extracted using [FFMPEG](https://github.com/FFmpeg/FFmpeg).
@@ -37,6 +39,7 @@ then using [opensubtitlescom](https://github.com/dusking/opensubtitles-com) it w
 then using sdiff it will compare your video's subtitles to the downloaded subtitles to find a match and name your videos.
 
 # Enviromental Variables
+
 | Variable | Info | Default Values | Allowed Values |
 |-|-|-|-|
 | TMDB_API_KEY | [The Movie Database](https://www.themoviedb.org/settings/api) API Key | None | String |
@@ -48,7 +51,9 @@ then using sdiff it will compare your video's subtitles to the downloaded subtit
 | show_matches | Enables showing matches | False | True/False |
 
 # Volume Mounts
+
 ## /data/
+
 > [!TIP]
 > For better performance do not use separate volumes in docker for [MakeMKV_dir](#/data/MakeMKV_dir) &
 > [jellyfin_Shows](#/data/jellyfin_Shows) as this will result in a copy then delete instead of a rename.
@@ -57,16 +62,21 @@ Please mount your directory containing [MakeMKV_dir](#/data/MakeMKV_dir) & [jell
 Output Directory used for matches.csv
 
 ## /data/MakeMKV_dir
+
 Input directory with MKV files must have the [Required Directory Structure](#required_directory_structure)
 
 ## /data/jellyfin_Shows
+
 Output directory which MKVs are moved to when a match is found and if rename is enabled.
 
 ## /data/all_subtitles_dir/
+
 Output directory to store subtitles and text files. Files are not deleted.
 
 # Running program
+
 With the container started run `docker exec mkv_namer python MKV_Namer.py`
 
 ## Undoing rename
+
 With the container started run `docker exec mkv_namer bash undo_move.sh`
