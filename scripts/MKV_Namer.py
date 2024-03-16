@@ -4,6 +4,7 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 
 import srt
 import json
@@ -63,11 +64,11 @@ class Series:
         if adding_season:
             self.new_season.append(new_season)
     def print_pretty(self, spacing=''):
-        print(self.name)
-        print('{0}TMDB ID: {1}'.format(spacing, self.tmdb_id))
-        print('{0}Year: {1}'.format(spacing, self.year))
-        print('{0}Series Directory: {1}'.format(spacing, self.get_path()))
-        print('{0}Seasons: '.format(spacing))
+        sys.stdout.write('{0}\n'.format(self.name))
+        sys.stdout.write('{0}TMDB ID: {1}\n'.format(spacing, self.tmdb_id))
+        sys.stdout.write('{0}Year: {1}\n'.format(spacing, self.year))
+        sys.stdout.write('{0}Series Directory: {1}\n'.format(spacing, self.get_path()))
+        sys.stdout.write('{0}Seasons: \n'.format(spacing))
         for season in self.seasons:
             season.print_pretty()
 
@@ -83,7 +84,7 @@ class Season:
     def get_subtitles_save_dir(self, parent_path=''):
         return os.path.join(parent_path, 'Season {0}'.format(str(self.season_number).zfill(2)))
     def print_pretty(self, spacing='  '):
-        print('{0}Season {1}'.format(spacing, self.season_number))
+        sys.stdout.write('{0}Season {1}\n'.format(spacing, self.season_number))
         for episode in self.episodes:
             episode.print_pretty(spacing + spacing)
         for unknown_episode in self.unknown_videos:
@@ -108,8 +109,8 @@ class Episode:
     def set_num_lines(self):
         self.num_lines = count_lines(self.modified_subtitles_file)
     def print_pretty(self, spacing):
-        print('{0}Episode: {1}'.format(spacing , self.episode_number))
-        print('{0}{0}Episode Type: {1}'.format(spacing, self.episode_type))
+        sys.stdout.write('{0}Episode: {1}\n'.format(spacing , self.episode_number))
+        sys.stdout.write('{0}{0}Episode Type: {1}\n'.format(spacing, self.episode_type))
 
 class Unknown_Video():
     def __init__(self, file='', original_subtitles_path='', modified_subtitles_path='', stream_num=-1, stream_codec='', match_dict=None):
@@ -120,11 +121,11 @@ class Unknown_Video():
         self.stream_codec = stream_codec
         self.match_dict =  match_dict if match_dict else {}
     def print_pretty(self, spacing):
-        print('{0}file: '.format(spacing, self.file))
-        print('{0}{0}original_subtitles_path: '.format(spacing, self.original_subtitles_path))
-        print('{0}{0}modified_subtitles_path: '.format(spacing, self.modified_subtitles_path))
-        print('{0}{0}stream_num: '.format(spacing, self.stream_num))
-        print('{0}{0}stream_codec: '.format(spacing, self.stream_codec))
+        sys.stdout.write('{0}file: \n'.format(spacing, self.file))
+        sys.stdout.write('{0}{0}original_subtitles_path: \n'.format(spacing, self.original_subtitles_path))
+        sys.stdout.write('{0}{0}modified_subtitles_path: \n'.format(spacing, self.modified_subtitles_path))
+        sys.stdout.write('{0}{0}stream_num: \n'.format(spacing, self.stream_num))
+        sys.stdout.write('{0}{0}stream_codec: \n'.format(spacing, self.stream_codec))
 
 
 # Micro Functions
@@ -184,7 +185,7 @@ def get_series_information_from_tmdb(series_name, series_year, series_tmdb_id):
         series_tmdb_id = str(search.results[0]['id'])
 
         if series_tmdb_id[0] == 0:
-            print('TMDB ID Beigns with a 0!, not designed to remove the leading zeros yet')
+            sys.stdout.write('TMDB ID Beigns with a 0!, not designed to remove the leading zeros yet\n')
         series_name = search.results[0]['original_name']
         series_year = (search.results[0]['first_air_date'])
         series = Series(series_name, series_tmdb_id, series_year)
@@ -234,7 +235,7 @@ def get_subtitles(series_list):
                     if response.data:
                         srt = subtitles.download_and_save(response.data[0], filename=save_as)
                     else:
-                        print('No subtitles found for {0} Season {1} Episode {2}'.format(series.name, season.season_number, episode.episode_number))
+                        sys.stdout.write('No subtitles found for {0} Season {1} Episode {2}\n'.format(series.name, season.season_number, episode.episode_number))
                 if os.path.exists(save_as):
                     episode.original_subtitles_file = save_as
                     episode.modified_subtitles_file = os.path.join(modified_ost_subtitles, \
@@ -298,7 +299,7 @@ async def get_media_info(file):
 # See if media has subtitles in correct format and return stream number
 def get_srt_stream_number(file):
     media_info = json.loads( asyncio.run(get_media_info(file)))
-    # print(json.dumps(media_info, indent = 4))
+    # sys.stdout.write({0\n}.format(str(json.dumps(media_info, indent = 4))))
     streams = media_info['streams']
     indexes = []
     languages = ['eng']
@@ -311,7 +312,7 @@ def get_srt_stream_number(file):
                 if stream['tags']['language'] in languages:
                     indexes.append([index, stream['codec_name']])
     if len(indexes) == 0:
-        # print('SRT not found, searching for VOBDVD/PGS: ' + file)
+        # sys.stdout.write('SRT not found, searching for VOBDVD/PGS: {0}\n'.format(file))
         languages = ['eng']
         codecs = ['dvd_subtitle', 'hdmv_pgs_subtitle']
         index = -1
@@ -323,10 +324,10 @@ def get_srt_stream_number(file):
                         indexes.append([index, stream['codec_name']])
     if len(indexes) > 1:
         # TODO Better handling of multiple found
-        print('Ripping first found subtitle, Multiple subtitles found for the following for: {0}'.format(file))
+        sys.stdout.write('Ripping first found subtitle, Multiple subtitles found for the following for: {0}\n'.format(file))
     elif len(indexes) == 0:
         # TODO Better handling of not found
-        print('No subtitles found for: '.format(file))
+        sys.stdout.write('No subtitles found for: \n'.format(file))
 
     if indexes:
         return indexes[0][0], indexes[0][1]  
@@ -384,18 +385,18 @@ def extract_subtitles(series_list):
                     # Check format name
                     # if SRT
                     if codec_name == 'subrip':
-                        print('Getting subrip from: {0}'.format(unknown_video.file))
+                        sys.stdout.write('Getting subrip from: {0}\n'.format(unknown_video.file))
                         asyncio.run(run_ffmpeg(original_srt_name, unknown_video.file, unknown_video.stream_num))
                     # Elif PGS
                     elif codec_name == 'dvd_subtitle':
-                        print('Getting vobdvd from: {0}'.format(unknown_video.file))
+                        sys.stdout.write('Getting vobdvd from: {0}\n'.format(unknown_video.file))
                         extract_vobsub(original_srt_name, unknown_video.file, unknown_video.stream_num)
                     # Elif VOBSUB (DVD)
                     elif codec_name == 'hdmv_pgs_subtitle':
-                        print('Getting pgs from: {0}'.format(unknown_video.file))
+                        sys.stdout.write('Getting pgs from: {0}\n'.format(unknown_video.file))
                         extract_pgs(original_srt_name, unknown_video.file, unknown_video.stream_num)
                     else:
-                        print('Unsupported subtitle format ({0}) for: {1}'.format(codec_name, unknown_video.file))
+                        sys.stdout.write('Unsupported subtitle format ({0}) for: {1}\n'.format(codec_name, unknown_video.file))
                         exit()
     return series_list
 
@@ -426,7 +427,7 @@ def discover_series():
                     series = get_series_information_from_tmdb(series_name, series_year, series_tmdbid)
                 else:
                     # TODO Something useful other than just a print
-                    print('You are missing the series TMDB ID and name')
+                    sys.stdout.write('You are missing the series TMDB ID and name\n')
                 if series:
                     # TODO Will attempt to add seasons resulting in an error
                     series_list.append(series)
@@ -477,18 +478,18 @@ def find_matches(series_list):
                         if show_matches:
                             episode_likely = episode.get_path(series.name, season.season_number, '')
                             unknown_video_local_path = unknown_video.file.replace(MakeMKV_dir, '')
-                            print('{0} --> {1} ({3}%)'.format(unknown_video_local_path, episode_likely, percent_match_str))
+                            sys.stdout.write('{0} --> {1} ({3}%)\n'.format(unknown_video_local_path, episode_likely, percent_match_str))
 
                         match_found = True
                 if not match_found:
                     unknown_video_subtitles_local = unknown_video_subtitles.replace(modified_makemkv_subtitles, '')
                     # TODO Do more than just output answer
-                    print('Match not found for {0}'.format(unknown_video_subtitles_local))
+                    sys.stdout.write('Match not found for {0}\n'.format(unknown_video_subtitles_local))
                     match_percentages.sort(reverse=True)
-                    print('\tBest match: {0}'.format('%.2f' % match_percentages[0]))
+                    sys.stdout.write('\tBest match: {0}\n'.format('%.2f' % match_percentages[0]))
                     if len(match_percentages) > 1:
-                        print('\tSecond best match: {0}'.format('%.2f' % match_percentages[1]))
-                    print('\tNumber of lines: {0}'.format(str(num_lines_unknown_video)))
+                        sys.stdout.write('\tSecond best match: {0}\n'.format('%.2f' % match_percentages[1]))
+                    sys.stdout.write('\tNumber of lines: {0}\n'.format(str(num_lines_unknown_video)))
 
     return series_list
 
@@ -509,11 +510,11 @@ def rename_videos(series_list):
             for unknown_video in season.unknown_videos:
                 if len(unknown_video.match_dict) > 1:
                     unknown_video_local_path = unknown_video.file.replace(MakeMKV_dir, '')
-                    print('Multiple matches for {0}'.format(unknown_video_local_path))
+                    sys.stdout.write('Multiple matches for {0}\n'.format(unknown_video_local_path))
                     for fmv_name, fpercent_match in unknown_video.match_dict.items():
                         percent_match_str = '%.2f' % fpercent_match
                         filename = os.path.basename(fmv_name)
-                        print('\t{0},{1}'.format(percent_match_str, filename))
+                        sys.stdout.write('\t{0},{1}\n'.format(percent_match_str, filename))
                 elif len(unknown_video.match_dict) == 1:
                     mv_name = next(iter(unknown_video.match_dict.keys()))
                     percent_match = next(iter(unknown_video.match_dict.values()))
