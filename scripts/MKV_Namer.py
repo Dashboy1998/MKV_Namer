@@ -2,14 +2,16 @@
 
 import srt
 import os
-from ffmpeg.asyncio import FFmpeg
 import asyncio
-import tmdbsimple as tmdb
-from opensubtitlescom import OpenSubtitles
 import re
+import shutil
 import subprocess
 import json
-import shutil
+
+import tmdbsimple as tmdb
+from ffmpeg.asyncio import FFmpeg
+from opensubtitlescom import OpenSubtitles
+
 from pgsrip import pgsrip, Mkv, Options
 from babelfish import Language
 
