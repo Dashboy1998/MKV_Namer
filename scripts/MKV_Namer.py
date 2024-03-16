@@ -46,7 +46,7 @@ class Series:
     def get_path(self, parent_path = ''):
         # TODO
         return os.path.join(parent_path, self.name + ' (' + self.year + ') [tmdbid-' + self.tmdb_id + ']')
-    
+
     def get_subtitles_save_dir(self, parent_path=''):
         return os.path.join(parent_path, self.name + ' (' + self.year + ') [tmdbid-' + self.tmdb_id + ']')
 
@@ -181,7 +181,7 @@ def get_series_information_from_tmdb(series_name, series_year, series_tmdb_id):
 
         # TODO Remove leading zeros from ID
         series_tmdb_id = str(search.results[0]['id'])
-        
+
         if series_tmdb_id[0] == 0:
             print('TMDB ID Beigns with a 0!, not designed to remove the leading zeros yet')
         series_name = search.results[0]['original_name']
@@ -257,7 +257,7 @@ def process_srt(input_file, output_file):
             # Find all blocks
             for line in f:
                 srt_all += line
-        
+
         with open(output_file, 'a') as f:
             subtitle_generator = srt.parse(srt_all)
             subtitles = list(subtitle_generator)
@@ -326,7 +326,7 @@ def get_srt_stream_number(file):
     elif len(indexes) == 0:
         # TODO Better handling of not found
         print('No subtitles found for: ' + file)
-    
+
     if indexes:
         return indexes[0][0], indexes[0][1]  
     else:
@@ -371,11 +371,11 @@ def extract_subtitles(series_list):
         for season in series.seasons:
             for unknown_video in season.unknown_videos:
                 original_subtitles_save_path = unknown_video.original_subtitles_path
-                
+
                 path = os.path.dirnam(original_subtitles_save_path)
                 os.makedirs(path, exist_ok=True)
                 original_srt_name = unknown_video.original_subtitles_path
-                
+
 
                 codec_name = unknown_video.stream_codec
 
@@ -405,18 +405,18 @@ def discover_series():
     series_depth = 0
     season_depth = 1
     episode_depth = 2
-    
+
     for root, dirs, files in os.walk(MakeMKV_dir):
         depth = root[len(MakeMKV_dir) + len(os.path.sep):].count(os.path.sep)
         # TODO Breaks if dirs does not end with /
         dirname = os.path.basename(root)
-        
+
         if dirname: # Ignores root folder
             if depth == series_depth: # Series depth
                 series_name = get_series_name(dirname)
                 series_tmdbid = get_series_tmdbid(dirname)
                 series_year = get_series_year(dirname)
-                
+
                 series = None
                 if series_tmdbid and series_name and series_year:
                     series = Series(series_name, series_tmdbid, series_year)
@@ -432,7 +432,7 @@ def discover_series():
             elif depth >= season_depth:
                 if depth == season_depth:
                     season_number=get_season_number(dirname)
-                    
+
                     # Read Season
                     season = get_season_information_from_tmdb(season_number, series.tmdb_id)
                     series.seasons.append(season)
@@ -472,12 +472,12 @@ def find_matches(series_list):
                         percent_match_str = '%.2f' % percent_match
                         with open(matches_csv, 'a') as f:
                             f.write(unknown_video.file + ',' + mv_name + ',' + percent_match_str + '\n')
-                          
+
                         if show_matches:
                             episode_likely = episode.get_path(series.name, season.season_number, '')
                             unknown_video_local_path = unknown_video.file.replace(MakeMKV_dir, '')
                             print( unknown_video_local_path + ' --> ' + episode_likely + ' (' + percent_match_str + '%)')
-                        
+
                         match_found = True
                 if not match_found:
                     unknown_video_subtitles_local = unknown_video_subtitles.replace(modified_MakeMKV_subtitles, '')
@@ -488,7 +488,7 @@ def find_matches(series_list):
                     if len(match_percentages) > 1:
                         print('\tSecond best match: ' + '%.2f' % match_percentages[1])
                     print('\tNumber of lines: ' + str(num_lines_unknown_video))
-    
+
     return series_list
 
 def remove_episodes_without_subtitles(series_list):
@@ -520,7 +520,7 @@ def rename_videos(series_list):
                     percent_match_str = '%.2f' % percent_match
                     # Create output folder if it does not exists
                     os.makedirs(os.path.dirname(mv_name), exist_ok=True)
-                    
+
                     # TODO Fix error with renaming files going too fast?
                     shutil.move(unknown_video.file, mv_name)
                     with open(compare_srt_renaming_history, 'a') as f:
@@ -533,7 +533,7 @@ def main():
 
     # Create list of series
     series_list = discover_series()
-    
+
     series_list = extract_subtitles(series_list)
 
     # Download Subtitles from OST
