@@ -53,3 +53,12 @@ jobs:
         uses: ibiqlik/action-yamllint@v3
         with:
           config_file: .yamllint.yaml
+
+  pythonlint:
+    name: Lint - Python
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Python Linter
+        uses: wemake-services/wemake-python-styleguide@0.18.0
