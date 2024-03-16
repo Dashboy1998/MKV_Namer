@@ -29,3 +29,16 @@ jobs:
       - uses: hadolint/hadolint-action@v3.1.0
         with:
           dockerfile: Dockerfile
+
+  markdownlint:
+    name: Lint - Markdown
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Lint - Markdown
+        uses: DavidAnson/markdownlint-cli2-action@v15
+        with:
+          config: ".markdownlint.jsonc"
+          globs: "**/*.md"
