@@ -1,6 +1,7 @@
-# Required Directory Structure
+# MKV Namer
+## Required Directory Structure
 
-```
+```sh
 MakeMKV_dir
 ├── Series (2010) (tmdbid-123456)
 │   ├── Season 01
@@ -22,7 +23,7 @@ MakeMKV_dir
 │   │   │   ├── B2_t01.mkv
 ```
 
-# How does it work
+## How does it work
 
 This program will use FFMPEG (FFPROBE) on every MKV to find the first SRT in english. If an SRT is not found then it will search for the first english VOBDVD/PGS.
 
@@ -38,7 +39,7 @@ then using [opensubtitlescom](https://github.com/dusking/opensubtitles-com) it w
 
 then using sdiff it will compare your video's subtitles to the downloaded subtitles to find a match and name your videos.
 
-# Enviromental Variables
+## Enviromental Variables
 
 | Variable | Info | Default Values | Allowed Values |
 |-|-|-|-|
@@ -50,9 +51,9 @@ then using sdiff it will compare your video's subtitles to the downloaded subtit
 | rename | Enables renaming MKV files | False | True/False |
 | show_matches | Enables showing matches | False | True/False |
 
-# Volume Mounts
+## Volume Mounts
 
-## /data/
+### /data/
 
 > [!TIP]
 > For better performance do not use separate volumes in docker for [MakeMKV_dir](#/data/MakeMKV_dir) &
@@ -61,22 +62,22 @@ then using sdiff it will compare your video's subtitles to the downloaded subtit
 Please mount your directory containing [MakeMKV_dir](#/data/MakeMKV_dir) & [jellyfin_Shows](#/data/jellyfin_Shows)
 Output Directory used for matches.csv
 
-## /data/MakeMKV_dir
+### /data/MakeMKV_dir
 
 Input directory with MKV files must have the [Required Directory Structure](#required_directory_structure)
 
-## /data/jellyfin_Shows
+### /data/jellyfin_Shows
 
 Output directory which MKVs are moved to when a match is found and if rename is enabled.
 
-## /data/all_subtitles_dir/
+### /data/all_subtitles_dir/
 
 Output directory to store subtitles and text files. Files are not deleted.
 
-# Running program
+## Running program
 
 With the container started run `docker exec mkv_namer python MKV_Namer.py`
 
-## Undoing rename
+### Undoing rename
 
 With the container started run `docker exec mkv_namer bash undo_move.sh`
