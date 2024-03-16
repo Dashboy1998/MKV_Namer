@@ -7,11 +7,9 @@ import re
 import shutil
 import subprocess
 import json
-
 import tmdbsimple as tmdb
 from ffmpeg.asyncio import FFmpeg
 from opensubtitlescom import OpenSubtitles
-
 from pgsrip import pgsrip, Mkv, Options
 from babelfish import Language
 
