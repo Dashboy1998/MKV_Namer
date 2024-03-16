@@ -33,21 +33,21 @@ modified_OST_subtitles = os.path.join(all_subtitles_dir, 'modified/OST/')
 
 # Classes
 class Series:
-    def __init__(self, name = '', tmdb_id = '', first_air_date = '', seasons = None):
+    def __init__(self, name='', tmdb_id='', first_air_date='', seasons=None):
         self.name = str(name)
         self.tmdb_id = str(tmdb_id)
         self.seasons = seasons if seasons else []
         # Assumes format is YYYY-MM-DD or YYYY-DD-MM
         self.year = str(first_air_date.split('-')[0])
         # TODO Add Unknown videos if season is unknown
-    def set_year(self, first_air_date = ''):
+    def set_year(self, first_air_date=''):
         # Assumes format is YYYY-MM-DD or YYYY-DD-MM
         self.year = str(first_air_date.split('-')[0])
     def get_path(self, parent_path = ''):
         # TODO
         return os.path.join(parent_path, self.name + ' (' + self.year + ') [tmdbid-' + self.tmdb_id + ']')
     
-    def get_subtitles_save_dir(self, parent_path = ''):
+    def get_subtitles_save_dir(self, parent_path=''):
         return os.path.join(parent_path, self.name + ' (' + self.year + ') [tmdbid-' + self.tmdb_id + ']')
 
     def add_season(self, new_season):
@@ -61,7 +61,7 @@ class Series:
                 break
         if adding_season:
             self.new_season.append(new_season)
-    def print_pretty(self, spacing = ''):
+    def print_pretty(self, spacing=''):
         print(self.name)
         print(spacing + 'TMDB ID: ' + str(self.tmdb_id))
         print(spacing + 'Year: ' + str(self.year))
@@ -72,16 +72,16 @@ class Series:
 
 
 class Season:
-    def __init__(self, season_number = '', season_tmdb_id = '', episodes = None, unknown_videos = None):
+    def __init__(self, season_number='', season_tmdb_id='', episodes=None, unknown_videos=None):
         self.season_number = season_number
         self.season_tmdb_id = season_tmdb_id
         self.episodes = episodes if episodes else []
         self.unknown_videos = unknown_videos if unknown_videos else []
     def get_path(self):
         return 'Season ' + str(self.season_number).zfill(2)
-    def get_subtitles_save_dir(self, parent_path = ''):
+    def get_subtitles_save_dir(self, parent_path=''):
         return os.path.join(parent_path, 'Season ' + str(self.season_number).zfill(2))
-    def print_pretty(self, spacing = '  '):
+    def print_pretty(self, spacing='  '):
         print(spacing + 'Season ' + self.season_number)
         for episode in self.episodes:
             episode.print_pretty(spacing + spacing)
@@ -90,7 +90,7 @@ class Season:
 
 class Episode:
     # TODO Implement episode types
-    def __init__(self, episode_number = '', episode_type = '', original_subtitles_file = '', modified_subtitles_file = '', num_lines = None):
+    def __init__(self, episode_number='', episode_type='', original_subtitles_file='', modified_subtitles_file='', num_lines=None):
         self.episode_number = episode_number
         self.episode_type = episode_type
         self.original_subtitles_file = original_subtitles_file
@@ -98,7 +98,7 @@ class Episode:
         self.num_lines = num_lines
     def get_path(self, name, season_number, extension):
         return name + ' S' + str(season_number).zfill(2) + 'E' + str(self.episode_number).zfill(2) + extension
-    def get_subtitles_save_path(self, parent_path, extension = ''):
+    def get_subtitles_save_path(self, parent_path, extension=''):
         return os.path.join(parent_path, ' E' + str(self.episode_number).zfill(2) + extension)
     def get_original_subtitles_path(self):
         return self.original_subtitles_file
@@ -111,7 +111,7 @@ class Episode:
         print(spacing + spacing + 'Episode Type: ' + str(self.episode_type))
 
 class Unknown_Video():
-    def __init__(self, file = '', original_subtitles_path = '', modified_subtitles_path = '', stream_num = -1, stream_codec = '', match_dict = None):
+    def __init__(self, file='', original_subtitles_path='', modified_subtitles_path='', stream_num=-1, stream_codec='', match_dict=None):
         self.file = file
         self.original_subtitles_path = original_subtitles_path
         self.modified_subtitles_path = modified_subtitles_path
@@ -175,9 +175,9 @@ def get_series_information_from_tmdb(series_name, series_year, series_tmdb_id):
     else:
         search = tmdb.Search()
         if series_name and series_year:    
-            response = search.tv(query = series_name, first_air_date_year = series_year)
+            response = search.tv(query=series_name, first_air_date_year=series_year)
         elif series_name:
-            response = search.tv(query = series_name)
+            response = search.tv(query=series_name)
 
         # TODO Remove leading zeros from ID
         series_tmdb_id = str(search.results[0]['id'])
@@ -222,16 +222,16 @@ def get_subtitles(series_list):
         for season in series.seasons:
             # Creating dirs to save subtitles for each season
             season_path = os.path.join(original_OST_subtitles, series.get_path(), season.get_path())
-            os.makedirs(season_path, exist_ok = True)
+            os.makedirs(season_path, exist_ok=True)
             # Search for subtitles
             for episode in season.episodes:
                 save_as = os.path.join(season_path, episode.get_path(series.name, season.season_number, '.srt'))
                 if not os.path.exists(save_as):
                     # TODO Implement download limit reached
                     # TODO Implement no results found
-                    response = subtitles.search(parent_tmdb_id = series.tmdb_id, season_number = season.season_number, episode_number = episode.episode_number, languages = 'en')
+                    response = subtitles.search(parent_tmdb_id=series.tmdb_id, season_number=season.season_number, episode_number=episode.episode_number, languages='en')
                     if response.data:
-                        srt = subtitles.download_and_save(response.data[0], filename = save_as)
+                        srt = subtitles.download_and_save(response.data[0], filename=save_as)
                     else:
                         print('No subtitles found for ' + series.name + ' Season ' + str(season.season_number) + ' Episode ' + str(episode.episode_number))
                 if os.path.exists(save_as):
@@ -250,7 +250,7 @@ def remove_empty_lines(input_string):
 def process_srt(input_file, output_file):
     # TODO Move creating output path
     output_path = os.path.dirnam(output_file)
-    os.makedirs(output_path, exist_ok = True)
+    os.makedirs(output_path, exist_ok=True)
     if not os.path.exists(output_file):
         srt_all = ''
         with open(input_file) as f:
@@ -286,10 +286,10 @@ def process_srts(series_list):
 
 # Get stream information from MKV file
 async def get_media_info(file):
-    ffmpeg = FFmpeg(executable = 'ffprobe').input(
+    ffmpeg = FFmpeg(executable='ffprobe').input(
             file,
-            print_format = 'json',
-            show_streams = None,
+            print_format='json',
+            show_streams=None,
         )
 
     return await ffmpeg.execute()
@@ -340,8 +340,8 @@ async def run_ffmpeg(srt_name, video_path, stream_num):
             .input(video_path)
             .output(
                 srt_name,
-                map = ['0:s:' + str(stream_num)],
-                codec = 'text'
+                map=['0:s:' + str(stream_num)],
+                codec='text'
                 )
         )
 
@@ -360,7 +360,7 @@ def extract_vobsub(srt_name, video_path, stream_num):
 
 def extract_pgs(srt_name, video_path, stream_num):
     media = Mkv(video_path)
-    options = Options(languages = {Language('eng')}, overwrite = True, one_per_lang = True)
+    options = Options(languages={Language('eng')}, overwrite=True, one_per_lang=True)
     pgsrip.rip(media, options)
     srt_tmp_path = video_path.replace('.mkv', '.en.srt')
     shutil.move(srt_tmp_path, srt_name)
@@ -373,7 +373,7 @@ def extract_subtitles(series_list):
                 original_subtitles_save_path = unknown_video.original_subtitles_path
                 
                 path = os.path.dirnam(original_subtitles_save_path)
-                os.makedirs(path, exist_ok = True)
+                os.makedirs(path, exist_ok=True)
                 original_srt_name = unknown_video.original_subtitles_path
                 
 
@@ -483,7 +483,7 @@ def find_matches(series_list):
                     unknown_video_subtitles_local = unknown_video_subtitles.replace(modified_MakeMKV_subtitles, '')
                     # TODO Do more than just output answer
                     print('Match not found for ' + unknown_video_subtitles_local)
-                    match_percentages.sort(reverse = True)
+                    match_percentages.sort(reverse=True)
                     print('\tBest match: ' + '%.2f' % match_percentages[0])
                     if len(match_percentages) > 1:
                         print('\tSecond best match: ' + '%.2f' % match_percentages[1])
@@ -519,7 +519,7 @@ def rename_videos(series_list):
 
                     percent_match_str = '%.2f' % percent_match
                     # Create output folder if it does not exists
-                    os.makedirs(os.path.dirname(mv_name), exist_ok = True)
+                    os.makedirs(os.path.dirname(mv_name), exist_ok=True)
                     
                     # TODO Fix error with renaming files going too fast?
                     shutil.move(unknown_video.file, mv_name)
