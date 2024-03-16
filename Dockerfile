@@ -1,57 +1,27 @@
-FROM archlinux
+FROM levaitamas/vobsub2srt:latest as vobsub2srt_builder
 
-# Install packages
-RUN pacman -Sy
-RUN pacman --noconfirm -S \
-    diffutils \
-    ffmpeg \
-    tesseract-data-eng \
-    mkvtoolnix-cli \
-    python-pip \
-    base-devel \
-    git \
-    cmake
+FROM python:3.11-slim-bookworm
 
-RUN groupadd user --gid 1000 && \
-    useradd user --uid 1000 --gid 1000 -m && \
-    mkdir -p /data/all_subtitles/{modified,original}/{MakeMKV,OST} && \
-    mkdir -p /data/{jellyfin_Shows,MakeMKV_dir} && \
-    touch /data/MKV_Namer_history.csv && \
-    chown user:user -R /data
-
-# Prepare build for vobsub2srt
-USER user
-WORKDIR /home/user
-RUN git clone https://aur.archlinux.org/vobsub2srt-git.git
-WORKDIR /home/user/vobsub2srt-git
-
-# Build vobsub2srt
-RUN makepkg -r -c
-
-# Install vobsub2srt
-USER root
-RUN pacman --noconfirm -U ./vobsub2srt-git-1.0.7.gf3205f5-1-x86_64.pkg.tar.zst
-
-# Cleanup
-WORKDIR /home/user
-RUN pacman --noconfirm -R \
-    base-devel \
-    git \
-    cmake && \
-    rm -rf vobsub2srt-git
-
-ENV match_threshold=75 \
-    rename=False \
-    show_matches=False
-
-# Install pip packages
-USER user
-WORKDIR /home/user
+COPY --from=vobsub2srt_builder /usr/local/bin/vobsub2srt /usr/bin/vobsub2srt
 COPY --chown=user:user requirements.txt requirements.txt
-RUN pip install --break-system-packages --no-cache-dir --upgrade pip && \
-    pip install --break-system-packages --no-cache-dir --requirement requirements.txt && \
-    rm requirements.txt
 
-COPY --chown=user:user --chmod=755 scripts/ scripts
-WORKDIR /home/user/scripts
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y diffutils ffmpeg tesseract-ocr tesseract-ocr-eng libtesseract5 mkvtoolnix \
+    && apt-get autoremove -y \
+    && apt-get clean
+
+RUN pip install --no-cache-dir --requirement requirements.txt \
+    && rm requirements.txt
+
+RUN groupadd user --gid 1000 \
+    && useradd user --uid 1000 --gid 1000 \
+    && mkdir --mode 777 --parents /data/all_subtitles/{modified,original}/{MakeMKV,OST} \
+    && mkdir --mode 777 --parents /data/{jellyfin_Shows,MakeMKV_dir} \
+    && touch /data/MKV_Namer_history.csv \
+    && chown user:user -R /data
+
+USER user
+COPY --chown=user:user --chmod=755 scripts/ /scripts
+WORKDIR /scripts
+
 ENTRYPOINT [ "tail", "-f", "/dev/null" ]
