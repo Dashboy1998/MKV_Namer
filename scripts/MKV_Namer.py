@@ -27,10 +27,10 @@ match_threshold = float(os.environ['match_threshold'])
 rename = os.environ['rename'].lower() in ('true')
 show_matches = os.environ['show_matches'].lower() in ('true')
 
-original_MakeMKV_subtitles = os.path.join(all_subtitles_dir, 'original/MakeMKV/')
-modified_MakeMKV_subtitles = os.path.join(all_subtitles_dir, 'modified/MakeMKV/')
-original_OST_subtitles = os.path.join(all_subtitles_dir, 'original/OST/')
-modified_OST_subtitles = os.path.join(all_subtitles_dir, 'modified/OST/')
+original_makemkv_subtitles = os.path.join(all_subtitles_dir, 'original/MakeMKV/')
+modified_makemkv_subtitles = os.path.join(all_subtitles_dir, 'modified/MakeMKV/')
+original_ost_subtitles = os.path.join(all_subtitles_dir, 'original/OST/')
+modified_ost_subtitles = os.path.join(all_subtitles_dir, 'modified/OST/')
 
 # Classes
 class Series:
@@ -222,7 +222,7 @@ def get_subtitles(series_list):
     for series in series_list:
         for season in series.seasons:
             # Creating dirs to save subtitles for each season
-            season_path = os.path.join(original_OST_subtitles, series.get_path(), season.get_path())
+            season_path = os.path.join(original_ost_subtitles, series.get_path(), season.get_path())
             os.makedirs(season_path, exist_ok=True)
             # Search for subtitles
             for episode in season.episodes:
@@ -237,7 +237,7 @@ def get_subtitles(series_list):
                         print('No subtitles found for {0} Season {1} Episode {2}'.format(series.name, season.season_number, episode.episode_number))
                 if os.path.exists(save_as):
                     episode.original_subtitles_file = save_as
-                    episode.modified_subtitles_file = os.path.join(modified_OST_subtitles, \
+                    episode.modified_subtitles_file = os.path.join(modified_ost_subtitles, \
                                                       series.get_path(),
                                                       season.get_path(), \
                                                       episode.get_path(series.name, season.season_number, '.txt'))
@@ -442,8 +442,8 @@ def discover_series():
                         video_path = os.path.join(root, file)
                         stream_num, stream_codec = get_srt_stream_number(video_path)
                         if stream_num != -1:
-                            original_subtitles_path = os.path.join(original_MakeMKV_subtitles, series_list[-1].get_path(), series_list[-1].seasons[-1].get_path(), dirname, file.replace('.mkv', '.srt'))
-                            modified_subtitles_path = os.path.join(modified_MakeMKV_subtitles, series_list[-1].get_path(), series_list[-1].seasons[-1].get_path(), dirname, file.replace('.mkv', '.txt'))
+                            original_subtitles_path = os.path.join(original_makemkv_subtitles, series_list[-1].get_path(), series_list[-1].seasons[-1].get_path(), dirname, file.replace('.mkv', '.srt'))
+                            modified_subtitles_path = os.path.join(modified_makemkv_subtitles, series_list[-1].get_path(), series_list[-1].seasons[-1].get_path(), dirname, file.replace('.mkv', '.txt'))
                             series_list[-1].seasons[-1].unknown_videos.append(Unknown_Video(video_path, original_subtitles_path, modified_subtitles_path, stream_num, stream_codec))
 
     return series_list
@@ -481,7 +481,7 @@ def find_matches(series_list):
 
                         match_found = True
                 if not match_found:
-                    unknown_video_subtitles_local = unknown_video_subtitles.replace(modified_MakeMKV_subtitles, '')
+                    unknown_video_subtitles_local = unknown_video_subtitles.replace(modified_makemkv_subtitles, '')
                     # TODO Do more than just output answer
                     print('Match not found for {0}'.format(unknown_video_subtitles_local))
                     match_percentages.sort(reverse=True)
