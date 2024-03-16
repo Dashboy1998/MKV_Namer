@@ -17,11 +17,11 @@ opensubtitles_api_key=str(os.environ['OST_API_KEY'])
 opensubtitles_username=str(os.environ['OST_USERNAME'])
 opensubtitles_password=str(os.environ['OST_PASSWORD'])
 tmdb_api_key=str(os.environ['TMDB_API_KEY'])
-MakeMKV_dir="/data/MakeMKV_dir"
-all_subtitles_dir="/data/all_subtitles_dir/"
-jellyfin_Shows_directory="/data/jellyfin_Shows"
-compare_srt_renaming_history="/data/MKV_Namer_history.csv"
-matches_csv="/data/matches.csv"
+MakeMKV_dir=os.path.join("/data", str(os.environ['MakeMKV_dir']))
+all_subtitles_dir=os.path.join("/data", str(os.environ['all_subtitles_dir']))
+renamed_dir=os.path.join("/data", str(os.environ['renamed_dir']))
+compare_srt_renaming_history=os.path.join("/data", str(os.environ['csv_dir']), "MKV_Namer_history.csv")
+matches_csv=os.path.join("/data", str(os.environ['csv_dir']), "matches.csv")
 
 original_MakeMKV_subtitles=all_subtitles_dir + 'original/MakeMKV/'
 modified_MakeMKV_subtitles=all_subtitles_dir + 'modified/MakeMKV/'
@@ -494,7 +494,7 @@ def find_matches(series_list):
                     percent_match = 100 - 100 * different_lines / num_lines_unknown_video
                     match_percentages.append(percent_match)
                     if percent_match >= match_threshold:
-                        mv_name = os.path.join(series.get_path(jellyfin_Shows_directory), season.get_path(), \
+                        mv_name = os.path.join(series.get_path(renamed_dir), season.get_path(), \
                                       episode.get_path(series.name, season.season_number, ".mkv"))
 
                         # Add match to dict

@@ -24,8 +24,8 @@ RUN pip install --no-cache-dir --requirement requirements.txt \
 
 RUN groupadd user --gid 1000 \
     && useradd user --uid 1000 --gid 1000 \
-    && mkdir --parents /data/all_subtitles/{modified,original}/{MakeMKV,OST} \
-    && mkdir --parents /data/{jellyfin_Shows,MakeMKV_dir} \
+    && mkdir --parents /data/all_subtitles_dir/{modified,original}/{MakeMKV,OST} \
+    && mkdir --parents /data/{jellyfin_Shows,MakeMKV_dir,csv_dir} \
     && touch /data/MKV_Namer_history.csv \
     && chmod 777 -R /data \
     && chown user:user -R /data
@@ -33,5 +33,13 @@ RUN groupadd user --gid 1000 \
 USER user
 COPY --chown=user:user --chmod=755 scripts/ /scripts
 WORKDIR /scripts
+
+ENV MakeMKV_dir=MakeMKV_dir \
+    renamed_dir=jellyfin_Shows \
+    all_subtitles_dir=all_subtitles_dir \
+    csv_dir=csv_dir \
+    match_threshold=75 \
+    rename=False \
+    show_matches=False
 
 ENTRYPOINT [ "tail", "-f", "/dev/null" ]

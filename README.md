@@ -3,25 +3,29 @@
 ## Required Directory Structure
 
 ```sh
-MakeMKV_dir
-├── Series (2010) (tmdbid-123456)
-│   ├── Season 01
-│   │   ├── DISC_LABEL
-│   │   │   ├── B1_t00.mkv
-│   │   │   ├── B2_t01.mkv
-│   └── Season 02
-│   │   ├── DISC_LABEL
-│   │   │   ├── B1_t00.mkv
-│   │   │   ├── B2_t01.mkv
-├── Series (1966) (tmdbid-654321)
-│   ├── Season 01
-│   │   ├── DISC_LABEL
-│   │   │   ├── B1_t00.mkv
-│   │   │   ├── B2_t01.mkv
-│   └── Season 02
-│   │   ├── DISC_LABEL
-│   │   │   ├── B1_t00.mkv
-│   │   │   ├── B2_t01.mkv
+data
+├── MakeMKV_dir
+|   ├── Series (2010) (tmdbid-123456)
+|   │   ├── Season 01
+|   │   │   ├── DISC_LABEL
+|   │   │   │   ├── B1_t00.mkv
+|   │   │   │   ├── B2_t01.mkv
+|   │   └── Season 02
+|   │   │   ├── DISC_LABEL
+|   │   │   │   ├── B1_t00.mkv
+|   │   │   │   ├── B2_t01.mkv
+|   ├── Series (1966) (tmdbid-654321)
+|   │   ├── Season 01
+|   │   │   ├── DISC_LABEL
+|   │   │   │   ├── B1_t00.mkv
+|   │   │   │   ├── B2_t01.mkv
+|   │   └── Season 02
+|   │   │   ├── DISC_LABEL
+|   │   │   │   ├── B1_t00.mkv
+|   │   │   │   ├── B2_t01.mkv
+├── jellyfin_Shows
+├── all_subtitles
+├── csv_dir
 ```
 
 ## How does it work
@@ -53,6 +57,10 @@ videos.
 | OST_API_KEY | [Open Subtitles](https://www.opensubtitles.com/en/consumers) API Key | None | String |
 | OST_USERNAME | [Open Subtitles](https://www.opensubtitles.com/en/) username | None | String |
 | OST_PASSWORD | [Open Subtitles](https://www.opensubtitles.com/en/) password | None | String |
+| MakeMKV_dir | Relative path from /data volume which contains the series | MakeMKV_dir | Relative Path |
+| renamed_dir | Relative path from /data volume and is where renamed MKVs are moved | jellyfin_Shows | Relative Path |
+| all_subtitles | Relative path from /data volume where all subtitles are stored | all_subtitles | Relative Path |
+| csv_dir | Relative path from /data volume which outputs the generated csv files | csv_dir | Relative Path |
 | match_threshold | Threshold Required for a match | 75 | Float |
 | rename | Enables renaming MKV files | False | True/False |
 | show_matches | Enables showing matches | False | True/False |
