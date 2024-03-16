@@ -1,4 +1,5 @@
 # MKV Namer
+
 ## Required Directory Structure
 
 ```sh
@@ -25,19 +26,24 @@ MakeMKV_dir
 
 ## How does it work
 
-This program will use FFMPEG (FFPROBE) on every MKV to find the first SRT in english. If an SRT is not found then it will search for the first english VOBDVD/PGS.
+This program will use FFMPEG (FFPROBE) on every MKV to find the first SRT in english. If an SRT is not found then it 
+will search for the first english VOBDVD/PGS.
 
 SRTs will be extracted using [FFMPEG](https://github.com/FFmpeg/FFmpeg).
 
-VOBDVD will be extracted using mkvextract and then converted to SRT using [vobsub2srt](https://github.com/ruediger/VobSub2SRT/tree/master).
+VOBDVD will be extracted using mkvextract and then converted to SRT using 
+[vobsub2srt](https://github.com/ruediger/VobSub2SRT/tree/master).
 
 PGS will be extracted and converted to SRT using [pgsrip](https://github.com/ratoaq2/pgsrip).
 
-then using [tmdbsimple](https://github.com/celiao/tmdbsimple) it will get the list of episodes for every season listed in your directory structure.
+then using [tmdbsimple](https://github.com/celiao/tmdbsimple) it will get the list of episodes for every season listed 
+in your directory structure.
 
-then using [opensubtitlescom](https://github.com/dusking/opensubtitles-com) it will download subtitles for all episodes in a given season
+then using [opensubtitlescom](https://github.com/dusking/opensubtitles-com) it will download subtitles for all episodes 
+in a given season
 
-then using sdiff it will compare your video's subtitles to the downloaded subtitles to find a match and name your videos.
+then using sdiff it will compare your video's subtitles to the downloaded subtitles to find a match and name your 
+videos.
 
 ## Enviromental Variables
 
@@ -56,10 +62,10 @@ then using sdiff it will compare your video's subtitles to the downloaded subtit
 ### /data/
 
 > [!TIP]
-> For better performance do not use separate volumes in docker for [MakeMKV_dir](#/data/MakeMKV_dir) &
-> [jellyfin_Shows](#/data/jellyfin_Shows) as this will result in a copy then delete instead of a rename.
+> For better performance do not use separate volumes in docker for [MakeMKV_dir](#dataMakeMKV_dir) &
+> [jellyfin_Shows](#datajellyfin_Shows) as this will result in a copy then delete instead of a rename.
 
-Please mount your directory containing [MakeMKV_dir](#/data/MakeMKV_dir) & [jellyfin_Shows](#/data/jellyfin_Shows)
+Please mount your directory containing [MakeMKV_dir](#dataMakeMKV_dir) & [jellyfin_Shows](#datajellyfin_Shows)
 Output Directory used for matches.csv
 
 ### /data/MakeMKV_dir
