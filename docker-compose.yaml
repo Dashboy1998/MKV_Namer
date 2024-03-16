@@ -4,6 +4,7 @@ services:
     image: mkv_namer
     build:
       dockerfile: Dockerfile
+    stop_grace_period: 3s
     container_name: mkv_namer
     env_file:
       - enviroment_vars.conf
