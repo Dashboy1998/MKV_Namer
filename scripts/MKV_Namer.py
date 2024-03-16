@@ -509,9 +509,9 @@ def rename_videos(series_list):
                 if len(unknown_video.match_dict) > 1:
                     unknown_video_local_path = unknown_video.file.replace(MakeMKV_dir, '')
                     print('Multiple matches for ' + unknown_video_local_path)
-                    for mv_name, percent_match in unknown_video.match_dict.items():
-                        percent_match_str = '%.2f' % percent_match
-                        filename = os.path.basename(mv_name)
+                    for fmv_name, fpercent_match in unknown_video.match_dict.items():
+                        percent_match_str = '%.2f' % fpercent_match
+                        filename = os.path.basename(fmv_name)
                         print('\t' + percent_match_str + ',' + filename)
                 elif len(unknown_video.match_dict) == 1:
                     mv_name = next(iter(unknown_video.match_dict.keys()))
