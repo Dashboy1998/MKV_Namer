@@ -1,15 +1,24 @@
+# hadolint ignore=DL3007
 FROM levaitamas/vobsub2srt:latest as vobsub2srt_builder
 
 FROM python:3.11-slim-bookworm
 
+WORKDIR /
 COPY --from=vobsub2srt_builder /usr/local/bin/vobsub2srt /usr/bin/vobsub2srt
 COPY --chown=user:user requirements.txt requirements.txt
 
-RUN apt-get update \
-    && apt-get install --no-install-recommends -y diffutils ffmpeg tesseract-ocr tesseract-ocr-eng libtesseract5 mkvtoolnix \
+RUN apt-get update && apt-get install --no-install-recommends -y \
+    diffutils=1:3.8-4 \
+    ffmpeg=7:5.1.4-0+deb12u1 \
+    tesseract-ocr=5.3.0-2 \
+    tesseract-ocr-eng=1:4.1.0-2 \
+    libtesseract5=5.3.0-2 \
+    mkvtoolnix=74.0.0-1 \
     && apt-get autoremove -y \
-    && apt-get clean
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN pip install --no-cache-dir --requirement requirements.txt \
     && rm requirements.txt
 
