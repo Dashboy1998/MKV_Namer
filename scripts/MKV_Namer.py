@@ -45,10 +45,10 @@ class Series:
         self.year = str(first_air_date.split('-')[0])
     def get_path(self, parent_path = ''):
         # TODO
-        return os.path.join(parent_path, self.name + ' (' + self.year + ') [tmdbid-' + self.tmdb_id + ']')
+        return os.path.join(parent_path, 'self.name ({0}) [tmdbid-{1}].format(self.year, self.tmdb_id)')
 
     def get_subtitles_save_dir(self, parent_path=''):
-        return os.path.join(parent_path, self.name + ' (' + self.year + ') [tmdbid-' + self.tmdb_id + ']')
+        return os.path.join(parent_path, 'self.name ({0}) [tmdbid-{1}].format(self.year, self.tmdb_id)')
 
     def add_season(self, new_season):
         adding_season = True
@@ -63,10 +63,10 @@ class Series:
             self.new_season.append(new_season)
     def print_pretty(self, spacing=''):
         print(self.name)
-        print(spacing + 'TMDB ID: ' + str(self.tmdb_id))
-        print(spacing + 'Year: ' + str(self.year))
-        print(spacing + 'Series Directory: ' + str(self.get_path()))
-        print(spacing + 'Seasons: ')
+        print('{0}TMDB ID: {1}'.format(spacing, self.tmdb_id))
+        print('{0}Year: {1}'.format(spacing, self.year))
+        print('{0}Series Directory: {1}'.format(spacing, self.get_path()))
+        print('{0}Seasons: '.format(spacing))
         for season in self.seasons:
             season.print_pretty()
 
@@ -78,11 +78,11 @@ class Season:
         self.episodes = episodes if episodes else []
         self.unknown_videos = unknown_videos if unknown_videos else []
     def get_path(self):
-        return 'Season ' + str(self.season_number).zfill(2)
+        return 'Season {0}'.format(str(self.season_number).zfill(2))
     def get_subtitles_save_dir(self, parent_path=''):
-        return os.path.join(parent_path, 'Season ' + str(self.season_number).zfill(2))
+        return os.path.join(parent_path, 'Season {0}'.format(str(self.season_number).zfill(2)))
     def print_pretty(self, spacing='  '):
-        print(spacing + 'Season ' + self.season_number)
+        print('{0}Season {1}'.format(spacing, self.season_number))
         for episode in self.episodes:
             episode.print_pretty(spacing + spacing)
         for unknown_episode in self.unknown_videos:
@@ -97,9 +97,9 @@ class Episode:
         self.modified_subtitles_file = modified_subtitles_file
         self.num_lines = num_lines
     def get_path(self, name, season_number, extension):
-        return name + ' S' + str(season_number).zfill(2) + 'E' + str(self.episode_number).zfill(2) + extension
+        return '{0} S{1}E{2}{3}'.format(name, str(season_number).zfill(2), str(self.episode_number).zfill(2), extension)
     def get_subtitles_save_path(self, parent_path, extension=''):
-        return os.path.join(parent_path, ' E' + str(self.episode_number).zfill(2) + extension)
+        return os.path.join(parent_path, ' E{0}'.format(str(self.episode_number).zfill(2), extension))
     def get_original_subtitles_path(self):
         return self.original_subtitles_file
     def get_modified_subtitles_path(self):
@@ -107,8 +107,8 @@ class Episode:
     def set_num_lines(self):
         self.num_lines = count_lines(self.modified_subtitles_file)
     def print_pretty(self, spacing):
-        print(spacing + 'Episode: ' + str(self.episode_number))
-        print(spacing + spacing + 'Episode Type: ' + str(self.episode_type))
+        print('{0}Episode: {1}'.format(spacing , self.episode_number))
+        print('{0}{0}Episode Type: {1}'.format(spacing, self.episode_type))
 
 class Unknown_Video():
     def __init__(self, file='', original_subtitles_path='', modified_subtitles_path='', stream_num=-1, stream_codec='', match_dict=None):
@@ -119,11 +119,11 @@ class Unknown_Video():
         self.stream_codec = stream_codec
         self.match_dict =  match_dict if match_dict else {}
     def print_pretty(self, spacing):
-        print(spacing + 'file: ' + self.file)
-        print(spacing + spacing + 'original_subtitles_path: ' + self.original_subtitles_path)
-        print(spacing + spacing + 'modified_subtitles_path: ' + self.modified_subtitles_path)
-        print(spacing + spacing + 'stream_num: ' + str(self.stream_num))
-        print(spacing + spacing + 'stream_codec: ' + str(self.stream_codec))
+        print('{0}file: '.format(spacing, self.file))
+        print('{0}{0}original_subtitles_path: '.format(spacing, self.original_subtitles_path))
+        print('{0}{0}modified_subtitles_path: '.format(spacing, self.modified_subtitles_path))
+        print('{0}{0}stream_num: '.format(spacing, self.stream_num))
+        print('{0}{0}stream_codec: '.format(spacing, self.stream_codec))
 
 
 # Micro Functions
@@ -233,7 +233,7 @@ def get_subtitles(series_list):
                     if response.data:
                         srt = subtitles.download_and_save(response.data[0], filename=save_as)
                     else:
-                        print('No subtitles found for ' + series.name + ' Season ' + str(season.season_number) + ' Episode ' + str(episode.episode_number))
+                        print('No subtitles found for {0} Season {1} Episode {2}'.format(series.name, season.season_number, episode.episode_number))
                 if os.path.exists(save_as):
                     episode.original_subtitles_file = save_as
                     episode.modified_subtitles_file = os.path.join(modified_OST_subtitles, \
@@ -265,7 +265,7 @@ def process_srt(input_file, output_file):
                 alphanumeric = re.sub('[^0-9a-zA-Z ]+', '', subtitle.content)
                 word_per_line = alphanumeric.replace(' ', '\n')
                 no_blank_lines = remove_empty_lines(word_per_line)
-                f.write(no_blank_lines + '\n')
+                f.write('{0}\n'.format(no_blank_lines))
 
 def process_srts(series_list):
     for series in series_list:
@@ -322,10 +322,10 @@ def get_srt_stream_number(file):
                         indexes.append([index, stream['codec_name']])
     if len(indexes) > 1:
         # TODO Better handling of multiple found
-        print('Ripping first found subtitle, Multiple subtitles found for the following for: ' + file)
+        print('Ripping first found subtitle, Multiple subtitles found for the following for: {0}'.format(file))
     elif len(indexes) == 0:
         # TODO Better handling of not found
-        print('No subtitles found for: ' + file)
+        print('No subtitles found for: '.format(file))
 
     if indexes:
         return indexes[0][0], indexes[0][1]  
@@ -340,7 +340,7 @@ async def run_ffmpeg(srt_name, video_path, stream_num):
             .input(video_path)
             .output(
                 srt_name,
-                map=['0:s:' + str(stream_num)],
+                map=['0:s:{0}'.format(stream_num)],
                 codec='text'
                 )
         )
@@ -349,7 +349,7 @@ async def run_ffmpeg(srt_name, video_path, stream_num):
 
 def extract_vobsub(srt_name, video_path, stream_num):
     # Extract sub and idx
-    subprocess.check_output(['mkvextract', '-q', 'tracks', video_path, str(stream_num) + ':' + srt_name])
+    subprocess.check_output(['mkvextract', '-q', 'tracks', video_path, '{0}:{1}'.format(stream_num, srt_name)])
 
     # Convert to SRT
     subprocess.check_output(['vobsub2srt', srt_name.replace('.srt', '') ])
@@ -383,18 +383,18 @@ def extract_subtitles(series_list):
                     # Check format name
                     # if SRT
                     if codec_name == 'subrip':
-                        print('Getting subrip from: ' + unknown_video.file)
+                        print('Getting subrip from: {0}'.format(unknown_video.file))
                         asyncio.run(run_ffmpeg(original_srt_name, unknown_video.file, unknown_video.stream_num))
                     # Elif PGS
                     elif codec_name == 'dvd_subtitle':
-                        print('Getting vobdvd from: ' + unknown_video.file)
+                        print('Getting vobdvd from: {0}'.format(unknown_video.file))
                         extract_vobsub(original_srt_name, unknown_video.file, unknown_video.stream_num)
                     # Elif VOBSUB (DVD)
                     elif codec_name == 'hdmv_pgs_subtitle':
-                        print('Getting pgs from: ' + unknown_video.file)
+                        print('Getting pgs from: {0}'.format(unknown_video.file))
                         extract_pgs(original_srt_name, unknown_video.file, unknown_video.stream_num)
                     else:
-                        print('Unsupported subtitle format (' + codec_name + ') for: ' + unknown_video.file)
+                        print('Unsupported subtitle format ({0}) for: {1}'.format(codec_name, unknown_video.file))
                         exit()
     return series_list
 
@@ -471,23 +471,23 @@ def find_matches(series_list):
 
                         percent_match_str = '%.2f' % percent_match
                         with open(matches_csv, 'a') as f:
-                            f.write(unknown_video.file + ',' + mv_name + ',' + percent_match_str + '\n')
+                            f.write('{0},{1},{2}\n'.format(unknown_video.file, mv_name, percent_match_str))
 
                         if show_matches:
                             episode_likely = episode.get_path(series.name, season.season_number, '')
                             unknown_video_local_path = unknown_video.file.replace(MakeMKV_dir, '')
-                            print( unknown_video_local_path + ' --> ' + episode_likely + ' (' + percent_match_str + '%)')
+                            print('{0} --> {1} ({3}%)'.format(unknown_video_local_path, episode_likely, percent_match_str))
 
                         match_found = True
                 if not match_found:
                     unknown_video_subtitles_local = unknown_video_subtitles.replace(modified_MakeMKV_subtitles, '')
                     # TODO Do more than just output answer
-                    print('Match not found for ' + unknown_video_subtitles_local)
+                    print('Match not found for {0}'.format(unknown_video_subtitles_local))
                     match_percentages.sort(reverse=True)
-                    print('\tBest match: ' + '%.2f' % match_percentages[0])
+                    print('\tBest match: {0}'.format('%.2f' % match_percentages[0]))
                     if len(match_percentages) > 1:
-                        print('\tSecond best match: ' + '%.2f' % match_percentages[1])
-                    print('\tNumber of lines: ' + str(num_lines_unknown_video))
+                        print('\tSecond best match: {0}'.format('%.2f' % match_percentages[1]))
+                    print('\tNumber of lines: {0}'.format(str(num_lines_unknown_video)))
 
     return series_list
 
@@ -508,11 +508,11 @@ def rename_videos(series_list):
             for unknown_video in season.unknown_videos:
                 if len(unknown_video.match_dict) > 1:
                     unknown_video_local_path = unknown_video.file.replace(MakeMKV_dir, '')
-                    print('Multiple matches for ' + unknown_video_local_path)
+                    print('Multiple matches for {0}'.format(unknown_video_local_path))
                     for fmv_name, fpercent_match in unknown_video.match_dict.items():
                         percent_match_str = '%.2f' % fpercent_match
                         filename = os.path.basename(fmv_name)
-                        print('\t' + percent_match_str + ',' + filename)
+                        print('\t{0},{1}'.format(percent_match_str, filename))
                 elif len(unknown_video.match_dict) == 1:
                     mv_name = next(iter(unknown_video.match_dict.keys()))
                     percent_match = next(iter(unknown_video.match_dict.values()))
@@ -524,7 +524,7 @@ def rename_videos(series_list):
                     # TODO Fix error with renaming files going too fast?
                     shutil.move(unknown_video.file, mv_name)
                     with open(compare_srt_renaming_history, 'a') as f:
-                        f.write(unknown_video.file + ',' + mv_name + ',' + percent_match_str + '\n')
+                        f.write('{0},{1},{2}\n'.format(unknown_video.file, mv_name, percent_match_str))
 
 
 def main():
