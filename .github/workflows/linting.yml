@@ -18,3 +18,14 @@ jobs:
 
       - name: Shellcheck
         uses: ludeeus/action-shellcheck@2.0.0
+
+  dockerlint:
+    name: Lint - Docker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: Dockerfile
