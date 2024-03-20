@@ -264,7 +264,7 @@ def remove_empty_lines(input_string):
 # Processing Functions
 def process_srt(input_file, output_file):
     # TODO Move creating output path
-    output_path = os.path.dirnam(output_file)
+    output_path = os.path.dirname(output_file)
     os.makedirs(output_path, exist_ok=True)
     if not os.path.exists(output_file):
         srt_all = ''
@@ -387,7 +387,7 @@ def extract_subtitles(series_list):
             for unknown_video in season.unknown_videos:
                 original_subtitles_save_path = unknown_video.original_subtitles_path
 
-                path = os.path.dirnam(original_subtitles_save_path)
+                path = os.path.dirname(original_subtitles_save_path)
                 os.makedirs(path, exist_ok=True)
                 original_srt_name = unknown_video.original_subtitles_path
 
