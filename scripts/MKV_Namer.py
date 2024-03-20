@@ -49,10 +49,10 @@ class Series:
 
     def get_path(self, parent_path = ''):
         # TODO
-        return os.path.join(parent_path, 'self.name ({0}) [tmdbid-{1}].format(self.year, self.tmdb_id)')
+        return os.path.join(parent_path, '{0} ({1}) [tmdbid-{2}]'.format(self.name, self.year, self.tmdb_id))
 
     def get_subtitles_save_dir(self, parent_path=''):
-        return os.path.join(parent_path, 'self.name ({0}) [tmdbid-{1}].format(self.year, self.tmdb_id)')
+        return os.path.join(parent_path, '{0} ({1}) [tmdbid-{2}]'.format(self.name, self.year, self.tmdb_id))
 
     def add_season(self, new_season):
         adding_season = True
