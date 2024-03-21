@@ -1,0 +1,11 @@
+TMDB_API_KEY=""
+OST_API_KEY=""
+OST_USERNAME=""
+OST_PASSWORD=""
+MakeMKV_dir="MakeMKV_dir"
+renamed_dir="jellyfin_Shows"
+all_subtitles_dir="all_subtitles_dir"
+csv_dir="csv_dir"
+match_threshold=75
+rename=False
+show_matches=False

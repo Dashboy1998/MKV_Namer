@@ -1,0 +1,18 @@
+---
+services:
+  mkv_namer:
+    image: mkv_namer
+    build:
+      dockerfile: Dockerfile
+    stop_grace_period: 3s
+    container_name: mkv_namer
+    env_file:
+      - enviroment_vars.conf
+    volumes:
+      - "./data/:/data/"
+      - "./all_subtitles/:/data/all_subtitles_dir/"
+      - "./csv_dir:/data/csv_dir"
+      # It is not recommended to mount separate volumes for RIPs and jellyfin as that results in python having to
+      # copy then delete the data for rename rather than a move.
+      # - "./RIPs/:/data/MakeMKV_dir"
+      # - "./jellyfin_Shows/:/data/jellyfin_Shows"

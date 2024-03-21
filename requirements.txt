@@ -2,3 +2,5 @@ srt
 tmdbsimple
 opensubtitlescom
 python-ffmpeg
+pgsrip
+setuptools

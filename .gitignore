@@ -1,6 +1,7 @@
 *.srt
 all_subtitles/
 python_venv/
+python_venv_for_MKV_Namer/
 output/
 *.conf
 *.csv
