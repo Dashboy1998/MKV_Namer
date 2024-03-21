@@ -100,7 +100,14 @@ class Season:
 
 class Episode:
     # TODO Implement episode types
-    def __init__(self, episode_number='', episode_type='', original_subtitles_file='', modified_subtitles_file='', num_lines=None):
+    def __init__(
+        self,
+        episode_number='',
+        episode_type='',
+        original_subtitles_file='',
+        modified_subtitles_file='',
+        num_lines=None
+        ):
         self.episode_number = episode_number
         self.episode_type = episode_type
         self.original_subtitles_file = original_subtitles_file
@@ -125,7 +132,15 @@ class Episode:
 
 
 class Unknown_Video():
-    def __init__(self, file='', original_subtitles_path='', modified_subtitles_path='', stream_num=-1, stream_codec='', match_dict=None):
+    def __init__(
+        self,
+        file='',
+        original_subtitles_path='',
+        modified_subtitles_path='',
+        stream_num=-1,
+        stream_codec='',
+        match_dict=None,
+        ):
         self.file = file
         self.original_subtitles_path = original_subtitles_path
         self.modified_subtitles_path = modified_subtitles_path
@@ -177,7 +192,8 @@ def get_series_information_from_tmdb(series_name, series_year, series_tmdb_id):
     # TODO Implement more than one result found
     # TODO Implement if given tmdb id and year but not name check if year is correct
     # TODO See if season information is given series call 
-    # Note the number of seasons and amount of episodes in each season is returned in ['seasons'] however you will not know the number of each episode
+    # Note the number of seasons and amount of episodes in each season is returned in ['seasons']
+    # however you will not know the number of each episode
     tmdb.API_KEY = tmdb_api_key
 
     series = None
@@ -249,11 +265,20 @@ def get_subtitles(series_list):
                 if not os.path.exists(save_as):
                     # TODO Implement download limit reached
                     # TODO Implement no results found
-                    response = subtitles.search(parent_tmdb_id=series.tmdb_id, season_number=season.season_number, episode_number=episode.episode_number, languages='en')
+                    response = subtitles.search(
+                        parent_tmdb_id=series.tmdb_id,
+                        season_number=season.season_number,
+                        episode_number=episode.episode_number,
+                        languages='en',
+                        )
                     if response.data:
                         srt = subtitles.download_and_save(response.data[0], filename=save_as)
                     else:
-                        sys.stdout.write('No subtitles found for {0} Season {1} Episode {2}\n'.format(series.name, season.season_number, episode.episode_number))
+                        sys.stdout.write('No subtitles found for {0} Season {1} Episode {2}\n'.format(
+                            series.name,
+                            season.season_number,
+                            episode.episode_number,
+                            ))
                 if os.path.exists(save_as):
                     episode.original_subtitles_file = save_as
                     episode.modified_subtitles_file = os.path.join(modified_ost_subtitles, \
@@ -346,7 +371,9 @@ def get_srt_stream_number(file):
                         indexes.append([index, stream['codec_name']])
     if len(indexes) > 1:
         # TODO Better handling of multiple found
-        sys.stdout.write('Ripping first found subtitle, Multiple subtitles found for the following for: {0}\n'.format(file))
+        sys.stdout.write('Ripping first found subtitle, Multiple subtitles found for the following for: {0}\n'.format(
+            file,
+            ))
     elif len(indexes) == 0:
         # TODO Better handling of not found
         sys.stdout.write('No subtitles found for: {0}\n'.format(file))
@@ -420,7 +447,10 @@ def extract_subtitles(series_list):
                         sys.stdout.write('Getting pgs from: {0}\n'.format(unknown_video.file))
                         extract_pgs(original_srt_name, unknown_video.file, unknown_video.stream_num)
                     else:
-                        sys.stdout.write('Unsupported subtitle format ({0}) for: {1}\n'.format(codec_name, unknown_video.file))
+                        sys.stdout.write('Unsupported subtitle format ({0}) for: {1}\n'.format(
+                            codec_name,
+                            unknown_video.file,
+                            ))
                         exit()
     return series_list
 
@@ -467,9 +497,26 @@ def discover_series():
                         video_path = os.path.join(root, file)
                         stream_num, stream_codec = get_srt_stream_number(video_path)
                         if stream_num != -1:
-                            original_subtitles_path = os.path.join(original_makemkv_subtitles, series_list[-1].get_path(), series_list[-1].seasons[-1].get_path(), dirname, file.replace('.mkv', '.srt'))
-                            modified_subtitles_path = os.path.join(modified_makemkv_subtitles, series_list[-1].get_path(), series_list[-1].seasons[-1].get_path(), dirname, file.replace('.mkv', '.txt'))
-                            series_list[-1].seasons[-1].unknown_videos.append(Unknown_Video(video_path, original_subtitles_path, modified_subtitles_path, stream_num, stream_codec))
+                            original_subtitles_path = os.path.join(
+                                original_makemkv_subtitles, series_list[-1].get_path(),
+                                series_list[-1].seasons[-1].get_path(),
+                                dirname,
+                                file.replace('.mkv', '.srt'),
+                                )
+                            modified_subtitles_path = os.path.join(
+                                modified_makemkv_subtitles,
+                                series_list[-1].get_path(),
+                                series_list[-1].seasons[-1].get_path(),
+                                dirname,
+                                file.replace('.mkv', '.txt'),
+                                )
+                            series_list[-1].seasons[-1].unknown_videos.append(Unknown_Video(
+                                video_path,
+                                original_subtitles_path,
+                                modified_subtitles_path,
+                                stream_num,
+                                stream_codec,
+                                ))
 
     return series_list
 
@@ -484,7 +531,12 @@ def find_matches(series_list):
                 match_percentages = []
                 for episode in season.episodes:
                     episode_subtitles = episode.modified_subtitles_file
-                    output = subprocess.check_output(['bash', './compare_srts.sh', unknown_video_subtitles, episode_subtitles])
+                    output = subprocess.check_output([
+                        'bash',
+                        './compare_srts.sh',
+                        unknown_video_subtitles,
+                        episode_subtitles,
+                        ])
                     different_lines = int(output.decode('utf-8').strip())
                     percent_match = 100 - 100 * different_lines / num_lines_unknown_video
                     match_percentages.append(percent_match)
@@ -501,7 +553,11 @@ def find_matches(series_list):
                         if show_matches:
                             episode_likely = episode.get_path(series.name, season.season_number, '')
                             unknown_video_local_path = unknown_video.file.replace(MakeMKV_dir, '')
-                            sys.stdout.write('{0} --> {1} ({2:.2f}%)\n'.format(unknown_video_local_path, episode_likely, percent_match))
+                            sys.stdout.write('{0} --> {1} ({2:.2f}%)\n'.format(
+                                unknown_video_local_path,
+                                episode_likely,
+                                percent_match,
+                                ))
 
                         match_found = True
                 if not match_found:
