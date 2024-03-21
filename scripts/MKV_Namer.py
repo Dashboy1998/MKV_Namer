@@ -33,6 +33,7 @@ modified_makemkv_subtitles = os.path.join(all_subtitles_dir, 'modified/MakeMKV/'
 original_ost_subtitles = os.path.join(all_subtitles_dir, 'original/OST/')
 modified_ost_subtitles = os.path.join(all_subtitles_dir, 'modified/OST/')
 
+
 # Classes
 class Series:
     def __init__(self, name='', tmdb_id='', first_air_date='', seasons=None):
@@ -96,6 +97,7 @@ class Season:
         for unknown_episode in self.unknown_videos:
             unknown_episode.print_pretty(spacing)
 
+
 class Episode:
     # TODO Implement episode types
     def __init__(self, episode_number='', episode_type='', original_subtitles_file='', modified_subtitles_file='', num_lines=None):
@@ -121,6 +123,7 @@ class Episode:
         sys.stdout.write('{0}Episode: {1}\n'.format(spacing , self.episode_number))
         sys.stdout.write('{0}{0}Episode Type: {1}\n'.format(spacing, self.episode_type))
 
+
 class Unknown_Video():
     def __init__(self, file='', original_subtitles_path='', modified_subtitles_path='', stream_num=-1, stream_codec='', match_dict=None):
         self.file = file
@@ -143,19 +146,23 @@ def count_lines(file_path):
     with open(file_path, 'r') as file:
         return sum(1 for _ in file)
 
+
 def get_series_name(dirname):
     results = re.search('.*(?= \([0-9]*)', dirname)
     return results.group(0) if results else None
+
 
 def get_series_year(dirname):
     # TODO Implement more than one year extracted
     results = re.findall(r'(\d+)', dirname)
     return results[0] if results else None
 
+
 def get_series_tmdbid(dirname):
     # TODO Implement more than one TMDB ID extracted
     results = re.findall(r'[\[{]tmdbid-(\d+)[\]}]', dirname)
     return results[0] if results else None
+
 
 def get_season_number(dirname):
     # TODO Implement unable to extract season number
@@ -200,6 +207,7 @@ def get_series_information_from_tmdb(series_name, series_year, series_tmdb_id):
         series_year = (search.results[0]['first_air_date'])
         series = Series(series_name, series_tmdb_id, series_year)
     return series
+
 
 def get_season_information_from_tmdb(season_number, series_tmdb_id):
     # TODO Implement no results found
@@ -253,10 +261,12 @@ def get_subtitles(series_list):
                                                       season.get_path(), \
                                                       episode.get_path(series.name, season.season_number, '.txt'))
 
+
 def remove_empty_lines(input_string):
     lines = input_string.splitlines()
     non_empty_lines = [line for line in lines if line.strip()]
     return os.linesep.join(non_empty_lines)
+
 
 # Processing Functions
 def process_srt(input_file, output_file):
@@ -278,6 +288,7 @@ def process_srt(input_file, output_file):
                 word_per_line = alphanumeric.replace(' ', '\n')
                 no_blank_lines = remove_empty_lines(word_per_line)
                 opened_file.write('{0}\n'.format(no_blank_lines))
+
 
 def process_srts(series_list):
     for series in series_list:
@@ -305,6 +316,7 @@ async def get_media_info(file):
         )
 
     return await ffmpeg.execute()
+
 
 # See if media has subtitles in correct format and return stream number
 def get_srt_stream_number(file):
@@ -345,7 +357,6 @@ def get_srt_stream_number(file):
         return -1, ''
 
 
-
 async def run_ffmpeg(srt_name, video_path, stream_num):
     ffmpeg = (
             FFmpeg()
@@ -359,6 +370,7 @@ async def run_ffmpeg(srt_name, video_path, stream_num):
 
     await ffmpeg.execute()
 
+
 def extract_vobsub(srt_name, video_path, stream_num):
     # Extract sub and idx
     subprocess.check_output(['mkvextract', '-q', 'tracks', video_path, '{0}:{1}'.format(stream_num, srt_name)])
@@ -370,12 +382,14 @@ def extract_vobsub(srt_name, video_path, stream_num):
     os.remove(srt_name.replace('.srt', '.idx'))
     os.remove(srt_name.replace('.srt', '.sub'))
 
+
 def extract_pgs(srt_name, video_path, stream_num):
     media = Mkv(video_path)
     options = Options(languages={Language('eng')}, overwrite=True, one_per_lang=True)
     pgsrip.rip(media, options)
     srt_tmp_path = video_path.replace('.mkv', '.en.srt')
     shutil.move(srt_tmp_path, srt_name)
+
 
 def extract_subtitles(series_list):
     # TODO Implement for no seasons but episodes
@@ -502,6 +516,7 @@ def find_matches(series_list):
 
     return series_list
 
+
 def remove_episodes_without_subtitles(series_list):
     episode_list = []
     for series in series_list:
@@ -512,6 +527,7 @@ def remove_episodes_without_subtitles(series_list):
             season.episodes = episode_list
 
     return series_list
+
 
 def rename_videos(series_list):
     for series in series_list:
