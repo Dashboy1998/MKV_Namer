@@ -108,9 +108,6 @@ class Episode:
     def get_path(self, name, season_number, extension):
         return '{0} S{1}E{2}{3}'.format(name, str(season_number).zfill(2), str(self.episode_number).zfill(2), extension)
 
-    def get_subtitles_save_path(self, parent_path, extension=''):
-        return os.path.join(parent_path, ' E{0}'.format(str(self.episode_number).zfill(2), extension))
-
     def get_original_subtitles_path(self):
         return self.original_subtitles_file
 
@@ -134,11 +131,11 @@ class Unknown_Video():
         self.match_dict =  match_dict if match_dict else {}
 
     def print_pretty(self, spacing):
-        sys.stdout.write('{0}file: \n'.format(spacing, self.file))
-        sys.stdout.write('{0}{0}original_subtitles_path: \n'.format(spacing, self.original_subtitles_path))
-        sys.stdout.write('{0}{0}modified_subtitles_path: \n'.format(spacing, self.modified_subtitles_path))
-        sys.stdout.write('{0}{0}stream_num: \n'.format(spacing, self.stream_num))
-        sys.stdout.write('{0}{0}stream_codec: \n'.format(spacing, self.stream_codec))
+        sys.stdout.write('{0}file: {1}\n'.format(spacing, self.file))
+        sys.stdout.write('{0}{0}original_subtitles_path: {1}\n'.format(spacing, self.original_subtitles_path))
+        sys.stdout.write('{0}{0}modified_subtitles_path: {1}\n'.format(spacing, self.modified_subtitles_path))
+        sys.stdout.write('{0}{0}stream_num: {1}\n'.format(spacing, self.stream_num))
+        sys.stdout.write('{0}{0}stream_codec: {1}\n'.format(spacing, self.stream_codec))
 
 
 # Micro Functions
