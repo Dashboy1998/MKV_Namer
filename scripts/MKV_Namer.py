@@ -157,7 +157,7 @@ def get_series_year(dirname):
 
 def get_series_tmdbid(dirname):
     # TODO Implement more than one TMDB ID extracted
-    results = re.findall(r"[\[{]tmdbid-(\d+)[\]}]", dirname)
+    results = re.findall(r'[\[{]tmdbid-(\d+)[\]}]', dirname)
     return results[0] if results else None
 
 def get_season_number(dirname):
