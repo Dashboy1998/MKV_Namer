@@ -484,14 +484,13 @@ def find_matches(series_list):
                         # Add match to dict
                         unknown_video.match_dict[mv_name]=percent_match
 
-                        percent_match_str = '%.2f' % percent_match
                         with open(matches_csv, 'a') as f:
-                            f.write('{0},{1},{2}\n'.format(unknown_video.file, mv_name, percent_match_str))
+                            f.write('{0},{1},{2:.2f}\n'.format(unknown_video.file, mv_name, percent_match))
 
                         if show_matches:
                             episode_likely = episode.get_path(series.name, season.season_number, '')
                             unknown_video_local_path = unknown_video.file.replace(MakeMKV_dir, '')
-                            sys.stdout.write('{0} --> {1} ({3}%)\n'.format(unknown_video_local_path, episode_likely, percent_match_str))
+                            sys.stdout.write('{0} --> {1} ({2:.2f}%)\n'.format(unknown_video_local_path, episode_likely, percent_match))
 
                         match_found = True
                 if not match_found:
@@ -499,10 +498,10 @@ def find_matches(series_list):
                     # TODO Do more than just output answer
                     sys.stdout.write('Match not found for {0}\n'.format(unknown_video_subtitles_local))
                     match_percentages.sort(reverse=True)
-                    sys.stdout.write('\tBest match: {0}\n'.format('%.2f' % match_percentages[0]))
+                    sys.stdout.write('\tBest match: {0:.2f}%\n'.format(match_percentages[0]))
                     if len(match_percentages) > 1:
-                        sys.stdout.write('\tSecond best match: {0}\n'.format('%.2f' % match_percentages[1]))
-                    sys.stdout.write('\tNumber of lines: {0}\n'.format(str(num_lines_unknown_video)))
+                        sys.stdout.write('\tSecond best match: {0:.2f}%\n'.format(match_percentages[1]))
+                    sys.stdout.write('\tNumber of lines: {0}\n'.format(num_lines_unknown_video))
 
     return series_list
 
@@ -525,21 +524,19 @@ def rename_videos(series_list):
                     unknown_video_local_path = unknown_video.file.replace(MakeMKV_dir, '')
                     sys.stdout.write('Multiple matches for {0}\n'.format(unknown_video_local_path))
                     for fmv_name, fpercent_match in unknown_video.match_dict.items():
-                        percent_match_str = '%.2f' % fpercent_match
                         filename = os.path.basename(fmv_name)
-                        sys.stdout.write('\t{0},{1}\n'.format(percent_match_str, filename))
+                        sys.stdout.write('\t{0:.2f},{1}\n'.format(fpercent_match, filename))
                 elif len(unknown_video.match_dict) == 1:
                     mv_name = next(iter(unknown_video.match_dict.keys()))
                     percent_match = next(iter(unknown_video.match_dict.values()))
 
-                    percent_match_str = '%.2f' % percent_match
                     # Create output folder if it does not exists
                     os.makedirs(os.path.dirname(mv_name), exist_ok=True)
 
                     # TODO Fix error with renaming files going too fast?
                     shutil.move(unknown_video.file, mv_name)
                     with open(compare_srt_renaming_history, 'a') as f:
-                        f.write('{0},{1},{2}\n'.format(unknown_video.file, mv_name, percent_match_str))
+                        f.write('{0},{1},{2:.2f}\n'.format(unknown_video.file, mv_name, percent_match))
 
 
 def main():
