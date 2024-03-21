@@ -265,19 +265,19 @@ def process_srt(input_file, output_file):
     os.makedirs(output_path, exist_ok=True)
     if not os.path.exists(output_file):
         srt_all = ''
-        with open(input_file) as f:
+        with open(input_file) as opened_file:
             # Find all blocks
-            for line in f:
+            for line in opened_file:
                 srt_all += line
 
-        with open(output_file, 'a') as f:
+        with open(output_file, 'a') as opened_file:
             subtitle_generator = srt.parse(srt_all)
             subtitles = list(subtitle_generator)
             for subtitle in subtitles:
                 alphanumeric = re.sub('[^0-9a-zA-Z ]+', '', subtitle.content)
                 word_per_line = alphanumeric.replace(' ', '\n')
                 no_blank_lines = remove_empty_lines(word_per_line)
-                f.write('{0}\n'.format(no_blank_lines))
+                opened_file.write('{0}\n'.format(no_blank_lines))
 
 def process_srts(series_list):
     for series in series_list:
@@ -481,8 +481,8 @@ def find_matches(series_list):
                         # Add match to dict
                         unknown_video.match_dict[mv_name]=percent_match
 
-                        with open(matches_csv, 'a') as f:
-                            f.write('{0},{1},{2:.2f}\n'.format(unknown_video.file, mv_name, percent_match))
+                        with open(matches_csv, 'a') as opened_file:
+                            opened_file.write('{0},{1},{2:.2f}\n'.format(unknown_video.file, mv_name, percent_match))
 
                         if show_matches:
                             episode_likely = episode.get_path(series.name, season.season_number, '')
@@ -532,8 +532,8 @@ def rename_videos(series_list):
 
                     # TODO Fix error with renaming files going too fast?
                     shutil.move(unknown_video.file, mv_name)
-                    with open(compare_srt_renaming_history, 'a') as f:
-                        f.write('{0},{1},{2:.2f}\n'.format(unknown_video.file, mv_name, percent_match))
+                    with open(compare_srt_renaming_history, 'a') as opened_file:
+                        opened_file.write('{0},{1},{2:.2f}\n'.format(unknown_video.file, mv_name, percent_match))
 
 
 def main():
