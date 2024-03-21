@@ -48,7 +48,7 @@ class Series:
         # Assumes format is YYYY-MM-DD or YYYY-DD-MM
         self.year = str(first_air_date.split('-')[0])
 
-    def get_path(self, parent_path = ''):
+    def get_path(self, parent_path=''):
         # TODO
         return os.path.join(parent_path, '{0} ({1}) [tmdbid-{2}]'.format(self.name, self.year, self.tmdb_id))
 
@@ -106,8 +106,8 @@ class Episode:
         episode_type='',
         original_subtitles_file='',
         modified_subtitles_file='',
-        num_lines=None
-        ):
+        num_lines=None,
+    ):
         self.episode_number = episode_number
         self.episode_type = episode_type
         self.original_subtitles_file = original_subtitles_file
@@ -127,7 +127,7 @@ class Episode:
         self.num_lines = count_lines(self.modified_subtitles_file)
 
     def print_pretty(self, spacing):
-        sys.stdout.write('{0}Episode: {1}\n'.format(spacing , self.episode_number))
+        sys.stdout.write('{0}Episode: {1}\n'.format(spacing, self.episode_number))
         sys.stdout.write('{0}{0}Episode Type: {1}\n'.format(spacing, self.episode_type))
 
 
@@ -140,13 +140,13 @@ class Unknown_Video():
         stream_num=-1,
         stream_codec='',
         match_dict=None,
-        ):
+    ):
         self.file = file
         self.original_subtitles_path = original_subtitles_path
         self.modified_subtitles_path = modified_subtitles_path
         self.stream_num = stream_num
         self.stream_codec = stream_codec
-        self.match_dict =  match_dict if match_dict else {}
+        self.match_dict = match_dict if match_dict else {}
 
     def print_pretty(self, spacing):
         sys.stdout.write('{0}file: {1}\n'.format(spacing, self.file))
@@ -281,10 +281,12 @@ def get_subtitles(series_list):
                             ))
                 if os.path.exists(save_as):
                     episode.original_subtitles_file = save_as
-                    episode.modified_subtitles_file = os.path.join(modified_ost_subtitles, \
-                                                      series.get_path(),
-                                                      season.get_path(), \
-                                                      episode.get_path(series.name, season.season_number, '.txt'))
+                    episode.modified_subtitles_file = os.path.join(
+                        modified_ost_subtitles,
+                        series.get_path(),
+                        season.get_path(),
+                        episode.get_path(series.name, season.season_number, '.txt')
+                        )
 
 
 def remove_empty_lines(input_string):
@@ -320,15 +322,15 @@ def process_srts(series_list):
         for season in series.seasons:
             for unknown_video in season.unknown_videos:
                 # Process SRTs
-                process_srt( \
-                    unknown_video.original_subtitles_path, \
-                    unknown_video.modified_subtitles_path
+                process_srt(
+                    unknown_video.original_subtitles_path,
+                    unknown_video.modified_subtitles_path,
                     )
             for episode in season.episodes:
                 # Process SRTs
-                process_srt( \
-                    episode.get_original_subtitles_path(), \
-                    episode.get_modified_subtitles_path()
+                process_srt(
+                    episode.get_original_subtitles_path(),
+                    episode.get_modified_subtitles_path(),
                     )
 
 
@@ -345,7 +347,7 @@ async def get_media_info(file):
 
 # See if media has subtitles in correct format and return stream number
 def get_srt_stream_number(file):
-    media_info = json.loads( asyncio.run(get_media_info(file)))
+    media_info = json.loads(asyncio.run(get_media_info(file)))
     # sys.stdout.write({0\n}.format(str(json.dumps(media_info, indent = 4))))
     streams = media_info['streams']
     indexes = []
@@ -403,7 +405,7 @@ def extract_vobsub(srt_name, video_path, stream_num):
     subprocess.check_output(['mkvextract', '-q', 'tracks', video_path, '{0}:{1}'.format(stream_num, srt_name)])
 
     # Convert to SRT
-    subprocess.check_output(['vobsub2srt', srt_name.replace('.srt', '') ])
+    subprocess.check_output(['vobsub2srt', srt_name.replace('.srt', '')])
 
     # Remove SUB and IDX files
     os.remove(srt_name.replace('.srt', '.idx'))
@@ -428,7 +430,6 @@ def extract_subtitles(series_list):
                 path = os.path.dirname(original_subtitles_save_path)
                 os.makedirs(path, exist_ok=True)
                 original_srt_name = unknown_video.original_subtitles_path
-
 
                 codec_name = unknown_video.stream_codec
 
@@ -467,8 +468,8 @@ def discover_series():
         # TODO Breaks if dirs does not end with /
         dirname = os.path.basename(root)
 
-        if dirname: # Ignores root folder
-            if depth == series_depth: # Series depth
+        if dirname:  # Ignores root folder
+            if depth == series_depth:  # Series depth
                 series_name = get_series_name(dirname)
                 series_tmdbid = get_series_tmdbid(dirname)
                 series_year = get_series_year(dirname)
@@ -487,7 +488,7 @@ def discover_series():
                     series_list.append(series)
             elif depth >= season_depth:
                 if depth == season_depth:
-                    season_number=get_season_number(dirname)
+                    season_number = get_season_number(dirname)
 
                     # Read Season
                     season = get_season_information_from_tmdb(season_number, series.tmdb_id)
@@ -541,11 +542,14 @@ def find_matches(series_list):
                     percent_match = 100 - 100 * different_lines / num_lines_unknown_video
                     match_percentages.append(percent_match)
                     if percent_match >= match_threshold:
-                        mv_name = os.path.join(series.get_path(renamed_dir), season.get_path(), \
-                                      episode.get_path(series.name, season.season_number, '.mkv'))
+                        mv_name = os.path.join(
+                            series.get_path(renamed_dir),
+                            season.get_path(),
+                            episode.get_path(series.name, season.season_number, '.mkv'),
+                            )
 
                         # Add match to dict
-                        unknown_video.match_dict[mv_name]=percent_match
+                        unknown_video.match_dict[mv_name] = percent_match
 
                         with open(matches_csv, 'a') as opened_file:
                             opened_file.write('{0},{1},{2:.2f}\n'.format(unknown_video.file, mv_name, percent_match))
