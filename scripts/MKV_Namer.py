@@ -1,5 +1,7 @@
 #!/bin/python
 
+import asyncio
+import json
 import os
 import re
 import shutil
@@ -7,13 +9,11 @@ import subprocess
 import sys
 
 import srt
-import json
-import asyncio
 import tmdbsimple as tmdb
+from babelfish import Language
 from ffmpeg.asyncio import FFmpeg
 from opensubtitlescom import OpenSubtitles
-from pgsrip import pgsrip, Mkv, Options
-from babelfish import Language
+from pgsrip import Mkv, Options, pgsrip
 
 opensubtitles_api_key = str(os.environ['OST_API_KEY'])
 opensubtitles_username = str(os.environ['OST_USERNAME'])
