@@ -340,7 +340,7 @@ def get_srt_stream_number(file):
         sys.stdout.write('Ripping first found subtitle, Multiple subtitles found for the following for: {0}\n'.format(file))
     elif len(indexes) == 0:
         # TODO Better handling of not found
-        sys.stdout.write('No subtitles found for: \n'.format(file))
+        sys.stdout.write('No subtitles found for: {0}\n'.format(file))
 
     if indexes:
         return indexes[0][0], indexes[0][1]  
