@@ -196,7 +196,7 @@ def get_series_information_from_tmdb(series_name, series_year, series_tmdb_id):
     # TODO Implement no results found
     # TODO Implement more than one result found
     # TODO Implement if given tmdb id and year but not name check if year is correct
-    # TODO See if season information is given series call 
+    # TODO See if season information is given series call
     # Note the number of seasons and amount of episodes in each season is returned in ['seasons']
     # however you will not know the number of each episode
     tmdb.API_KEY = tmdb_api_key
@@ -214,7 +214,7 @@ def get_series_information_from_tmdb(series_name, series_year, series_tmdb_id):
     # Does a search for the series with the name and year if provided
     else:
         search = tmdb.Search()
-        if series_name and series_year:    
+        if series_name and series_year:
             response = search.tv(query=series_name, first_air_date_year=series_year)
         elif series_name:
             response = search.tv(query=series_name)
@@ -234,7 +234,7 @@ def get_season_information_from_tmdb(season_number, series_tmdb_id):
     # TODO Implement no results found
     # TODO Implement too many results found
     # TODO Get all season information in one call
-    # TODO See if series information is given season call 
+    # TODO See if series information is given season call
     tmdb.API_KEY = tmdb_api_key
 
     tv = tmdb.TV_Seasons(series_tmdb_id, season_number)
@@ -387,7 +387,7 @@ def get_srt_stream_number(input_file):
         sys.stdout.write('No subtitles found for: {0}\n'.format(input_file))
 
     if indexes:
-        return indexes[0][0], indexes[0][1]  
+        return indexes[0][0], indexes[0][1]
     else:
         return -1, ''
 
