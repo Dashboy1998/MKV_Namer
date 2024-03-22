@@ -136,7 +136,7 @@ class Episode:
         sys.stdout.write('{0}{0}Episode Type: {1}\n'.format(spacing, self.episode_type))
 
 
-class Unknown_Video():
+class Unknown_Video:
     def __init__(
         self,
         file_path='',
