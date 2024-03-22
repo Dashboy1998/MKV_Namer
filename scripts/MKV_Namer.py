@@ -15,15 +15,20 @@ from ffmpeg.asyncio import FFmpeg
 from opensubtitlescom import OpenSubtitles
 from pgsrip import Mkv, Options, pgsrip
 
+# Constants
+DATA_PATH = '/data'
+SRT_EXTENTSION = '.srt'
+MKV_EXTENTSION = '.mkv'
+
 opensubtitles_api_key = str(os.environ['OST_API_KEY'])
 opensubtitles_username = str(os.environ['OST_USERNAME'])
 opensubtitles_password = str(os.environ['OST_PASSWORD'])
 tmdb_api_key = str(os.environ['TMDB_API_KEY'])
-MakeMKV_dir = os.path.join('/data', str(os.environ['MakeMKV_dir']))
-all_subtitles_dir = os.path.join('/data', str(os.environ['all_subtitles_dir']))
-renamed_dir = os.path.join('/data', str(os.environ['renamed_dir']))
-compare_srt_renaming_history = os.path.join('/data', str(os.environ['csv_dir']), 'MKV_Namer_history.csv')
-matches_csv = os.path.join('/data', str(os.environ['csv_dir']), 'matches.csv')
+MakeMKV_dir = os.path.join(DATA_PATH, str(os.environ['MakeMKV_dir']))
+all_subtitles_dir = os.path.join(DATA_PATH, str(os.environ['all_subtitles_dir']))
+renamed_dir = os.path.join(DATA_PATH, str(os.environ['renamed_dir']))
+compare_srt_renaming_history = os.path.join(DATA_PATH, str(os.environ['csv_dir']), 'MKV_Namer_history.csv')
+matches_csv = os.path.join(DATA_PATH, str(os.environ['csv_dir']), 'matches.csv')
 match_threshold = float(os.environ['match_threshold'])
 rename = os.environ['rename'].lower() in ('true')
 show_matches = os.environ['show_matches'].lower() in ('true')
@@ -261,7 +266,7 @@ def get_subtitles(series_list):
             os.makedirs(season_path, exist_ok=True)
             # Search for subtitles
             for episode in season.episodes:
-                save_as = os.path.join(season_path, episode.get_path(series.name, season.season_number, '.srt'))
+                save_as = os.path.join(season_path, episode.get_path(series.name, season.season_number, SRT_EXTENTSION))
                 if not os.path.exists(save_as):
                     # TODO Implement download limit reached
                     # TODO Implement no results found
@@ -354,12 +359,13 @@ def get_srt_stream_number(input_file):
     languages = ['eng']
     codecs = ['subrip']
     index = -1
+    codec_name_key = 'codec_name'
     for stream in streams:
         if stream['codec_type'] == 'subtitle':
             index = index + 1
-            if stream['codec_name'] in codecs:
+            if stream[codec_name_key] in codecs:
                 if stream['tags']['language'] in languages:
-                    indexes.append([index, stream['codec_name']])
+                    indexes.append([index, stream[codec_name_key]])
     if len(indexes) == 0:
         # sys.stdout.write('SRT not found, searching for VOBDVD/PGS: {0}\n'.format(input_file))
         languages = ['eng']
@@ -368,9 +374,9 @@ def get_srt_stream_number(input_file):
         for stream in streams:
             index = index + 1
             if stream['codec_type'] == 'subtitle':
-                if stream['codec_name'] in codecs:
+                if stream[codec_name_key] in codecs:
                     if stream['tags']['language'] in languages:
-                        indexes.append([index, stream['codec_name']])
+                        indexes.append([index, stream[codec_name_key]])
     if len(indexes) > 1:
         # TODO Better handling of multiple found
         sys.stdout.write('Ripping first found subtitle, Multiple subtitles found for the following for: {0}\n'.format(
@@ -405,18 +411,18 @@ def extract_vobsub(srt_name, video_path, stream_num):
     subprocess.check_output(['mkvextract', '-q', 'tracks', video_path, '{0}:{1}'.format(stream_num, srt_name)])
 
     # Convert to SRT
-    subprocess.check_output(['vobsub2srt', srt_name.replace('.srt', '')])
+    subprocess.check_output(['vobsub2srt', srt_name.replace(SRT_EXTENTSION, '')])
 
     # Remove SUB and IDX files
-    os.remove(srt_name.replace('.srt', '.idx'))
-    os.remove(srt_name.replace('.srt', '.sub'))
+    os.remove(srt_name.replace(SRT_EXTENTSION, '.idx'))
+    os.remove(srt_name.replace(SRT_EXTENTSION, '.sub'))
 
 
 def extract_pgs(srt_name, video_path, stream_num):
     media = Mkv(video_path)
     options = Options(languages={Language('eng')}, overwrite=True, one_per_lang=True)
     pgsrip.rip(media, options)
-    srt_tmp_path = video_path.replace('.mkv', '.en.srt')
+    srt_tmp_path = video_path.replace(MKV_EXTENTSION, '.en.srt')
     shutil.move(srt_tmp_path, srt_name)
 
 
@@ -502,14 +508,14 @@ def discover_series():
                                 original_makemkv_subtitles, series_list[-1].get_path(),
                                 series_list[-1].seasons[-1].get_path(),
                                 dirname,
-                                file_path.replace('.mkv', '.srt'),
+                                file_path.replace(MKV_EXTENTSION, SRT_EXTENTSION),
                                 )
                             modified_subtitles_path = os.path.join(
                                 modified_makemkv_subtitles,
                                 series_list[-1].get_path(),
                                 series_list[-1].seasons[-1].get_path(),
                                 dirname,
-                                file_path.replace('.mkv', '.txt'),
+                                file_path.replace(MKV_EXTENTSION, '.txt'),
                                 )
                             series_list[-1].seasons[-1].unknown_videos.append(Unknown_Video(
                                 video_path,
@@ -545,7 +551,7 @@ def find_matches(series_list):
                         mv_name = os.path.join(
                             series.get_path(renamed_dir),
                             season.get_path(),
-                            episode.get_path(series.name, season.season_number, '.mkv'),
+                            episode.get_path(series.name, season.season_number, MKV_EXTENTSION),
                             )
 
                         # Add match to dict
