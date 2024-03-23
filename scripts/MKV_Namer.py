@@ -81,6 +81,15 @@ class Series:
         for season in self.seasons:
             season.print_pretty()
 
+    # TODO Function to extract subtitles
+    # TODO Inside function we should convert to text files
+
+    # TODO Function to download Subtitles from OST
+    # TODO Inside function we should convert to text files
+
+    # TODO Function to find matches
+    # TODO Inside function we should rename files
+
 
 class Season:
     def __init__(self, season_number='', season_tmdb_id='', episodes=None, unknown_videos=None):
@@ -101,6 +110,15 @@ class Season:
             episode.print_pretty(spacing + spacing)
         for unknown_episode in self.unknown_videos:
             unknown_episode.print_pretty(spacing)
+
+    # TODO Function to extract subtitles
+    # TODO Inside function we should convert to text files
+
+    # TODO Function to download Subtitles from OST
+    # TODO Inside function we should convert to text files
+
+    # TODO Function to find matches
+    # TODO Inside function we should rename files
 
 
 class Episode:
@@ -135,6 +153,9 @@ class Episode:
         sys.stdout.write('{0}Episode: {1}\n'.format(spacing, self.episode_number))
         sys.stdout.write('{0}{0}Episode Type: {1}\n'.format(spacing, self.episode_type))
 
+    # TODO Function to download Subtitles from OST
+    # TODO Inside function we should convert to text files
+
 
 class Unknown_Video:
     def __init__(
@@ -159,6 +180,12 @@ class Unknown_Video:
         sys.stdout.write('{0}{0}modified_subtitles_path: {1}\n'.format(spacing, self.modified_subtitles_path))
         sys.stdout.write('{0}{0}stream_num: {1}\n'.format(spacing, self.stream_num))
         sys.stdout.write('{0}{0}stream_codec: {1}\n'.format(spacing, self.stream_codec))
+
+    # TODO Function to extract subtitles
+    # TODO Inside function we should convert to text files
+
+    # TODO Function to find matches
+    # TODO Inside function we should rename files
 
 
 # Micro Functions
