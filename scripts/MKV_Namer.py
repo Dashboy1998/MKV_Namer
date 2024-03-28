@@ -1,6 +1,7 @@
 #!/bin/python
 
 import asyncio
+import difflib
 import json
 import os
 import re
@@ -346,7 +347,8 @@ def process_srt(input_file, output_file):
                 alphanumeric = re.sub('[^0-9a-zA-Z ]+', '', subtitle.content)
                 word_per_line = alphanumeric.replace(' ', '\n')
                 no_blank_lines = remove_empty_lines(word_per_line)
-                opened_file.write('{0}\n'.format(no_blank_lines))
+                lower_case = no_blank_lines.lower()
+                opened_file.write('{0}\n'.format(lower_case))
 
 
 def process_srts(series_list):
@@ -555,6 +557,27 @@ def discover_series():
     return series_list
 
 
+# Return match percentage
+def compare_subtitles(unknown_video_subtitles_path, episode_subtitles_path):
+    # Read the contents of the files
+    with open(unknown_video_subtitles_path, "r") as unknown_video_subtitles_file, \
+        open(episode_subtitles_path, "r") as episode_subtitles_file:
+        unknown_video_subtitles = unknown_video_subtitles_file.readlines()
+        episode_subtitles = episode_subtitles_file.readlines()
+
+    # Calculate the differences using difflib
+    differ = difflib.Differ()
+    diff_result = list(differ.compare(unknown_video_subtitles, episode_subtitles))
+
+    # Count the number of differing lines
+    num_differences = max(
+        sum(1 for line in diff_result if line.startswith("+")),
+        sum(1 for line in diff_result if line.startswith("-")),
+        )
+    
+    return 100 - 100 * num_differences / len(unknown_video_subtitles)
+
+
 def find_matches(series_list):
     for series in series_list:
         for season in series.seasons:
@@ -565,14 +588,7 @@ def find_matches(series_list):
                 match_percentages = []
                 for episode in season.episodes:
                     episode_subtitles = episode.modified_subtitles_file
-                    output = subprocess.check_output([
-                        'bash',
-                        './compare_srts.sh',
-                        unknown_video_subtitles,
-                        episode_subtitles,
-                        ])
-                    different_lines = int(output.decode('utf-8').strip())
-                    percent_match = 100 - 100 * different_lines / num_lines_unknown_video
+                    percent_match = compare_subtitles(unknown_video_subtitles, episode_subtitles)
                     match_percentages.append(percent_match)
                     if percent_match >= match_threshold:
                         mv_name = os.path.join(
