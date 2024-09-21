@@ -9,7 +9,7 @@ COPY --chown=user:user requirements.txt requirements.txt
 
 RUN apt-get update && apt-get install --no-install-recommends -y \
     diffutils=1:3.8-4 \
-    ffmpeg=7:5.1.4-0+deb12u1 \
+    ffmpeg=7:5.1.6-0+deb12u1 \
     tesseract-ocr=5.3.0-2 \
     tesseract-ocr-eng=1:4.1.0-2 \
     libtesseract5=5.3.0-2 \
