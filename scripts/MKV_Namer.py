@@ -335,7 +335,7 @@ def process_srt(input_file, output_file):
     os.makedirs(output_path, exist_ok=True)
     if not os.path.exists(output_file):
         srt_all = ''
-        with open(input_file) as opened_file:
+        with open(input_file, encoding='latin-1') as opened_file:
             # Find all blocks
             for line in opened_file:
                 srt_all += line
