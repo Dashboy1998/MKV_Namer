@@ -515,7 +515,7 @@ def discover_series():
                     series = get_series_information_from_tmdb(series_name, series_year, series_tmdbid)
                 else:
                     # TODO Something useful other than just a print
-                    sys.stdout.write('You are missing the series TMDB ID and name\n')
+                    sys.stdout.write('You are missing the series TMDB ID and name for: {0}\n'.format(dirname))
                 if series:
                     # TODO Will attempt to add seasons resulting in an error
                     series_list.append(series)
