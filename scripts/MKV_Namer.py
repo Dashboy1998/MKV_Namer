@@ -304,7 +304,7 @@ def get_subtitles(series_list):
                         languages='en',
                         )
                     if response.data:
-                        srt = subtitles.download_and_save(response.data[0], filename=save_as)
+                        subtitles.download_and_save(response.data[0], filename=save_as)
                     else:
                         sys.stdout.write('No subtitles found for {0} Season {1} Episode {2}\n'.format(
                             series.name,
@@ -585,7 +585,8 @@ def find_matches(series_list):
                         unknown_video.match_dict[mv_name] = percent_match
 
                         with open(matches_csv, 'a') as opened_file:
-                            opened_file.write('{0},{1},{2:.2f}\n'.format(unknown_video.file_path, mv_name, percent_match))
+                            opened_file.write('{0},{1},{2:.2f}\n'.format(unknown_video.file_path, mv_name,
+                                                                         percent_match))
 
                         if show_matches:
                             episode_likely = episode.get_path(series.name, season.season_number, '')
