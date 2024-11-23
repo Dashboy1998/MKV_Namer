@@ -38,7 +38,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Lint - Markdown
-        uses: DavidAnson/markdownlint-cli2-action@v15
+        uses: DavidAnson/markdownlint-cli2-action@v18
         with:
           config: ".markdownlint.jsonc"
           globs: "**/*.md"
@@ -61,4 +61,4 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Python Linter
-        uses: wemake-services/wemake-python-styleguide@0.18.0
+        uses: wemake-services/wemake-python-styleguide@0.19.2
