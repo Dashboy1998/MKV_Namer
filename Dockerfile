@@ -24,7 +24,7 @@ RUN rm -rf VobSub2SRT \
     && strip /usr/local/bin/vobsub2srt \
     && apt-get purge -y git ca-certificates cmake pkg-config build-essential wget
 
-FROM python:3.11-slim-bookworm
+FROM python:3.13-slim-bookworm
 
 WORKDIR /
 COPY --from=vobsub2srt_builder /usr/local/bin/vobsub2srt /usr/bin/vobsub2srt
