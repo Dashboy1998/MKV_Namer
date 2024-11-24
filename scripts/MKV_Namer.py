@@ -201,7 +201,7 @@ def get_series_name(dirname):
 
 def get_series_year(dirname):
     # TODO Implement more than one year extracted
-    series_year_results = re.findall(r'(\d+)', dirname)
+    series_year_results = re.findall(r'(\d{4})', dirname)
     return series_year_results[0] if series_year_results else None
 
 
