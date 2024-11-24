@@ -195,7 +195,7 @@ def count_lines(file_path):
 
 
 def get_series_name(dirname):
-    series_name_results = re.search('.*(?= \([0-9]*)', dirname)
+    series_name_results = re.search(r'.*(?=\(\d{4}\))', dirname)
     return series_name_results.group(0) if series_name_results else None
 
 
