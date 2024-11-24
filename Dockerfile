@@ -1,5 +1,5 @@
 # hadolint ignore=DL3007
-FROM debian:12-slim as vobsub2srt_builder
+FROM debian:12-slim AS vobsub2srt_builder
 
 WORKDIR /
 # hadolint ignore=DL3008
